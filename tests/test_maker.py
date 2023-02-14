@@ -33,10 +33,12 @@ class TestMaker:
 
     def test_templaterize(self):
         print("")
-        shutil.rmtree(dir_here.joinpath("output"))
+        dir_output = dir_here.joinpath("output")
+        if dir_output.exists():
+            shutil.rmtree(dir_output)
         maker = Maker.new(
             input_dir=dir_here.joinpath("my_package-project"),
-            output_dir=dir_here.joinpath("output"),
+            output_dir=dir_output,
             mapper=[
                 ("my_package", "package_name"),
             ],
