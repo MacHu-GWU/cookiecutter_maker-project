@@ -2,8 +2,8 @@
 cookiecutter_maker_venv/
 cookiecutter_maker.egg-info/
 cookiecutter_maker-*/
+tests/output/
 tmp/
-
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
