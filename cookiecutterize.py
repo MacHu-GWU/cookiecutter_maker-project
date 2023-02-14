@@ -7,10 +7,10 @@ dir_tmp: Path = Path(__file__).absolute().parent.joinpath("tmp")
 dir_tmp.mkdir(parents=True, exist_ok=True)
 
 maker = Maker.new(
-    input_dir="/Users/sanhehu/Documents/Bitbucket/udm-studio/sound_credit_ingest-project",
+    input_dir="/path-to-input-dir/my_awesome_project",
     output_dir=dir_tmp,
     mapper=[
-        ("sound_credit_ingest", "package_name"),
+        ("my_awesome_project", "package_name"),
     ],
     include=[],
     exclude=[
@@ -24,14 +24,8 @@ maker = Maker.new(
         "htmlcov",
         # file
         ".coverage",
-        ".current-env-name.json",
-        ".poetry-lock-hash.json",
-        "requirements-main.txt",
-        "requirements-dev.txt",
-        "requirements-test.txt",
-        "requirements-doc.txt",
     ],
     overwrite=True,
-    debug=False,
+    debug=True,
 )
 maker.templaterize()

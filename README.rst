@@ -51,8 +51,37 @@
 
 Welcome to ``cookiecutter_maker`` Documentation
 ==============================================================================
+`cookiecutter <https://cookiecutter.readthedocs.io>`_ is an awesome library that can create projects from templates. However, you need to create a working template first. People actually usually start with a concrete, working project, then convert it into a template for future use. ``cookiecutter_maker`` is a Python open source tool can convert any git repo into a cookiecutter projects template.
 
-Documentation for ``cookiecutter_maker``.
+Usage:
+
+.. code-block:: python
+
+    from cookiecutter_maker.maker import Maker
+
+    maker = Maker.new(
+        input_dir="/path-to-input-dir/my_awesome_project",
+        output_dir="/path-to-output-dir",
+        mapper=[
+            ("my_awesome_project", "package_name"),
+        ],
+        include=[],
+        exclude=[
+            # dir
+            ".venv",
+            ".pytest_cache",
+            ".git",
+            ".idea",
+            "build",
+            "dist",
+            "htmlcov",
+            # file
+            ".coverage",
+        ],
+        overwrite=True,
+        debug=True,
+    )
+    maker.templaterize()
 
 
 .. _install:
