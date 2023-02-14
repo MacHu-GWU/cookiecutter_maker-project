@@ -2,6 +2,7 @@
 
 import os
 import pytest
+import shutil
 from pathlib import Path
 from cookiecutter_maker.maker import Maker
 
@@ -23,14 +24,16 @@ class TestMaker:
             _skip_validate=True,
         )
         assert (
-            maker.do_we_ignore(
+            maker._do_we_ignore(
                 Path("/tmp/input/my_package-project/.venv").relative_to(maker.input_dir)
             )
             is True
         )
-        maker.templaterize_dir(Path("/tmp/input/my_package-project/.venv"))
+        maker._templaterize_dir(Path("/tmp/input/my_package-project/.venv"))
 
     def test_templaterize(self):
+        print("")
+        shutil.rmtree(dir_here.joinpath("output"))
         maker = Maker.new(
             input_dir=dir_here.joinpath("my_package-project"),
             output_dir=dir_here.joinpath("output"),
@@ -43,6 +46,7 @@ class TestMaker:
                 ".venv-folder",
                 ".coverage-file",
             ],
+            overwrite=True,
             debug=True,
         )
         maker.templaterize()

@@ -6,7 +6,8 @@ from pytest import raises, approx
 
 def test():
     import cookiecutter_maker
-    pass
+
+    _ = cookiecutter_maker.Maker
 
 
 if __name__ == "__main__":

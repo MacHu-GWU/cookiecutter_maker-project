@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import shutil
+
 import typing as T
-import os
+
 import dataclasses
 from pathlib import Path
 from collections import OrderedDict
@@ -113,7 +113,7 @@ class Maker:
         no_render.append("*.jinja")
         return no_render
 
-    def do_we_ignore(self, relpath: Path) -> bool:
+    def _do_we_ignore(self, relpath: Path) -> bool:
         if len(self.include):
             match_include = False
             for pattern in self.include:
@@ -134,16 +134,16 @@ class Maker:
         else:
             return False
 
-    def do_we_render(self, relpath: Path) -> bool:
+    def _do_we_render(self, relpath: Path) -> bool:
         for pattern in self.no_render:
             if relpath.match(pattern):
                 return False
         return True
 
-    def templaterize_file(self, p_before: Path) -> T.Optional[Path]:
+    def _templaterize_file(self, p_before: Path) -> T.Optional[Path]:
         relpath = p_before.relative_to(self.input_dir)
 
-        if self.do_we_ignore(relpath):
+        if self._do_we_ignore(relpath):
             return None
 
         new_relpath = replace(str(relpath), self.mapper)
@@ -156,9 +156,10 @@ class Maker:
                 )
 
         if self.debug:
-            print(f"{str(p_before):<160} -> {str(p_after)}")
+            # print(f"{str(p_before):<160} -> {str(p_after)}")
+            print(f"{p_before} -> {p_after}")
 
-        if self.do_we_render(relpath) is False:
+        if self._do_we_render(relpath) is False:
             p_after.write_bytes(p_before.read_bytes())
             return p_after
 
@@ -173,16 +174,17 @@ class Maker:
         p_after.write_text(text)
         return p_after
 
-    def templaterize_dir(self, p_before: Path) -> T.Optional[Path]:
+    def _templaterize_dir(self, p_before: Path) -> T.Optional[Path]:
         relpath = p_before.relative_to(self.input_dir)
 
-        if self.do_we_ignore(relpath):
+        if self._do_we_ignore(relpath):
             return None
 
         new_relpath = replace(str(relpath), self.mapper)
         p_after = self._after_dir.joinpath(new_relpath)
         if self.debug:
-            print(f"{str(p_before):<160} -> {str(p_after)}")
+            # print(f"{str(p_before):<160} -> {str(p_after)}")
+            print(f"{p_before} -> {p_after}")
         p_after.mkdir(parents=True, exist_ok=True)
         return p_after
 
@@ -190,7 +192,10 @@ class Maker:
         self,
         dir_src: Path,
     ):
-        p_after = self.templaterize_dir(dir_src)
+        """
+        Recursively templaterize a directory.
+        """
+        p_after = self._templaterize_dir(dir_src)
 
         if (
             p_after is None
@@ -201,7 +206,7 @@ class Maker:
             if p.is_dir():
                 self._templaterize(p)
             elif p.is_file():
-                self.templaterize_file(p)
+                self._templaterize_file(p)
             else:
                 pass
 
