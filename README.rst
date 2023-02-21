@@ -57,7 +57,7 @@ Summary
 ------------------------------------------------------------------------------
 `Python Cookiecutter <https://cookiecutter.readthedocs.io>`_ is an awesome library that can create projects from templates. In an enterprise setting, people typically start with a concrete, working project and then convert it into a template that serves as the internal standard for future use (Template -> Project).
 
-`Cookiecutter Maker <https://github.com/MacHu-GWU/cookiecutter_maker-project>`_ is the inverse of ``cookiecutter`` (Project -> Template). It is a Python open source tool that can convert any given folder structure into a ``cookiecutter`` project.
+📋 `Cookiecutter Maker <https://github.com/MacHu-GWU/cookiecutter_maker-project>`_ is the inverse of ``cookiecutter`` (Project -> Template). It is a Python open source tool that can convert any given folder structure into a ``cookiecutter`` project.
 
 
 Usage Example
