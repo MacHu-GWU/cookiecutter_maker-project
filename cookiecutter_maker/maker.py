@@ -2,6 +2,7 @@
 
 import typing as T
 
+import json
 import dataclasses
 from pathlib import Path
 from collections import OrderedDict
@@ -14,6 +15,7 @@ class Maker:
     input_dir: Path = dataclasses.field()
     output_dir: Path = dataclasses.field()
     mapper: T.List[T.Tuple[str, str]] = dataclasses.field()
+    processed_mapper: T.List[T.Tuple[str, str]] = dataclasses.field()
     include: T.List[str] = dataclasses.field(default_factory=list)
     exclude: T.List[str] = dataclasses.field(default_factory=list)
     no_render: T.List[str] = dataclasses.field(default_factory=list)
@@ -39,7 +41,8 @@ class Maker:
         maker = cls(
             input_dir=cls._preprocess_input_dir(input_dir, _skip_validate),
             output_dir=cls._preprocess_output_dir(output_dir),
-            mapper=cls._preprocess_mapper(mapper),
+            mapper=mapper,
+            processed_mapper=cls._preprocess_mapper(mapper),
             include=cls._preprocess_include(include),
             exclude=cls._preprocess_exclude(exclude),
             no_render=cls._preprocess_no_render(no_render),
@@ -47,7 +50,7 @@ class Maker:
             debug=debug,
         )
         maker._after_dir = maker.output_dir.joinpath(
-            replace(maker.input_dir.name, maker.mapper)
+            replace(maker.input_dir.name, maker.processed_mapper)
         )
         return maker
 
@@ -146,7 +149,7 @@ class Maker:
         if self._do_we_ignore(relpath):
             return None
 
-        new_relpath = replace(str(relpath), self.mapper)
+        new_relpath = replace(str(relpath), self.processed_mapper)
         p_after = self._after_dir.joinpath(new_relpath)
 
         if p_after.exists():
@@ -170,7 +173,7 @@ class Maker:
             p_after.write_bytes(b)
             return p_after
 
-        text = replace(s, self.mapper)
+        text = replace(s, self.processed_mapper)
         p_after.write_text(text)
         return p_after
 
@@ -180,7 +183,7 @@ class Maker:
         if self._do_we_ignore(relpath):
             return None
 
-        new_relpath = replace(str(relpath), self.mapper)
+        new_relpath = replace(str(relpath), self.processed_mapper)
         p_after = self._after_dir.joinpath(new_relpath)
         if self.debug:
             # print(f"{str(p_before):<160} -> {str(p_after)}")
@@ -209,6 +212,12 @@ class Maker:
                 self._templaterize_file(p)
             else:
                 pass
+
+        path_cookiecutter_json = self.output_dir.joinpath("cookiecutter.json")
+        cookiecutter_json_data = dict()
+        for concrete_string, parameter_name in self.mapper:
+            cookiecutter_json_data[parameter_name] = concrete_string
+        path_cookiecutter_json.write_text(json.dumps(cookiecutter_json_data, indent=4))
 
     def templaterize(self):
         self._templaterize(dir_src=self.input_dir)
