@@ -51,21 +51,38 @@
 
 Welcome to ``cookiecutter_maker`` Documentation
 ==============================================================================
-`cookiecutter <https://cookiecutter.readthedocs.io>`_ is an awesome library that can create projects from templates. However, you need to create a working template first. People actually usually start with a concrete, working project, then convert it into a template for future use. ``cookiecutter_maker`` is a Python open source tool can convert any git repo into a cookiecutter projects template.
 
-Usage:
+
+Summary
+------------------------------------------------------------------------------
+`Python Cookiecutter <https://cookiecutter.readthedocs.io>`_ is an awesome library that can create projects from templates. In an enterprise setting, people typically start with a concrete, working project and then convert it into a template that serves as the internal standard for future use (Template -> Project).
+
+`Cookiecutter Maker <https://github.com/MacHu-GWU/cookiecutter_maker-project>`_ is the inverse of ``cookiecutter`` (Project -> Template). It is a Python open source tool that can convert any given folder structure into a ``cookiecutter`` project.
+
+
+Usage Example
+------------------------------------------------------------------------------
+Run the following python script to convert your concrete project into a template project:
 
 .. code-block:: python
 
     from cookiecutter_maker.maker import Maker
 
     maker = Maker.new(
+        # the input concrete project directory
         input_dir="/path-to-input-dir/my_awesome_project",
+        # the output template project directory
         output_dir="/path-to-output-dir",
+        # define the pair of ``concrete string`` and ``parameter name``
         mapper=[
             ("my_awesome_project", "package_name"),
         ],
+        # define what to include in the input directory
+        # it is the relative path from the input directory
+        # the rule is 'explicit exclude' > 'explicit include' > 'default include'
         include=[],
+        # define what to exclude in the input directory
+        # it is the relative path from the input directory
         exclude=[
             # dir
             ".venv",
@@ -78,10 +95,14 @@ Usage:
             # file
             ".coverage",
         ],
+        # over write the output location if already exists
         overwrite=True,
+        # do you want to print debug information?
         debug=True,
     )
     maker.templaterize()
+
+In this example, it will create a directory ``{{ cookiecutter.package_name }}`` and a json file ``cookiecutter.json``. Now you can follow the `cookiecutter instruction <https://cookiecutter.readthedocs.io>`_ to generate more concrete projects.
 
 
 .. _install:
