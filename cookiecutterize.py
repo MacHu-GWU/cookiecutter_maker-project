@@ -10,16 +10,14 @@ if dir_tmp.exists():
 dir_tmp.mkdir(parents=True, exist_ok=True)
 
 maker = Maker.new(
-    input_dir="/Users/sanhehu/Documents/CodeCommit/ami_backup-project",
+    input_dir="/Users/sanhehu/Documents/GitHub/afwf_example-project",
     output_dir=dir_tmp,
     mapper=[
-        ("ami_backup", "package_name"),
+        ("afwf_example", "package_name"),
+        ("MacHu-GWU", "github_username"),
         ("Sanhe Hu", "author_name"),
-        ("sanhehu@amazon.com", "author_email"),
-        ("0.1.1", "semantic_version"),
-        ("awshsh_app_dev_us_east_1", "aws_profile"),
-        ("807388292768", "aws_account_id"),
-        ("us-east-1", "aws_region"),
+        ("husanhe@gmail.com", "author_email"),
+        ("/Users/sanhehu/Documents/Alfred-Preferences/Alfred.alfredpreferences/workflows/user.workflow.BE825014-E97C-4213-BEFE-E652C1C83974", "dir_workflow"),
     ],
     include=[],
     exclude=[
@@ -33,7 +31,11 @@ maker = Maker.new(
         "htmlcov",
         # file
         ".coverage",
-        "bin/tests.py",
+        ".poetry-lock-hash.json",
+        "requirements-dev.txt",
+        "requirements-doc.txt",
+        "requirements-main.txt",
+        "requirements-test.txt",
     ],
     overwrite=True,
     debug=False,
