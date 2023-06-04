@@ -4,8 +4,19 @@ import os
 import pytest
 
 from cookiecutter_maker.strutils import (
+    MapperValidationError,
+    validate_mapper,
     replace,
 )
+
+
+def test_validate_mapper():
+    mapper = [
+        ("john", "name"),
+        ("john@email.com", "email"),
+    ]
+    with pytest.raises(MapperValidationError):
+        validate_mapper(mapper)
 
 
 def test_replace():
@@ -16,12 +27,19 @@ def test_replace():
     ]
     assert replace(text, mapper) == "hello first person, hello second person"
 
+    text = "john, john@email.com"
     mapper = [
-        ("alice", "first person"),
-        ("alice bob", "second person"),
+        ("john", "name"),
+        ("john@email.com", "email"),
     ]
-    with pytest.raises(ValueError):
-        replace(text, mapper)
+    assert replace(text, mapper) == "name, name@email.com"
+
+    text = "john, john@email.com"
+    mapper = [
+        ("john@email.com", "email"),
+        ("john", "name"),
+    ]
+    assert replace(text, mapper) == "name, email"
 
 
 if __name__ == "__main__":
