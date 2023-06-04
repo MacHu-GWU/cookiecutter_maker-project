@@ -5,9 +5,9 @@ from pytest import raises, approx
 
 
 def test():
-    import cookiecutter_maker
+    from cookiecutter_maker import api
 
-    _ = cookiecutter_maker.Maker
+    _ = api.Maker
 
 
 if __name__ == "__main__":
