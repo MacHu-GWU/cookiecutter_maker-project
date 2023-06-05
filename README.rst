@@ -75,7 +75,7 @@ Run the following python script to convert your concrete project into a template
         output_dir="/path-to-output-dir",
         # define the pair of ``concrete string`` and ``parameter name``
         mapper=[
-            ("my_awesome_project", "package_name"),
+            ("my_awesome_project", "package_name", "default_package_name"),
         ],
         # define what to include in the input directory
         # it is the relative path from the input directory
@@ -95,8 +95,19 @@ Run the following python script to convert your concrete project into a template
             # file
             ".coverage",
         ],
+        # define what to copy as it is without rending
+        # usually you should ignore jinja template files
+        no_render=[
+            "*.tpl",
+        ],
         # over write the output location if already exists
         overwrite=True,
+        # mapper could have one key is substring of another key
+        # if this is True, it will ignore the error
+        ignore_mapper_error=False,
+        # when mapper could have one key is substring of another key
+        # it will prompt you to confirm to continue
+        skip_mapper_prompt=True,
         # do you want to print debug information?
         debug=True,
     )
