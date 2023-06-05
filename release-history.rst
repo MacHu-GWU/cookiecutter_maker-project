@@ -20,12 +20,12 @@ Backlog (TODO)
 **Features and Improvements**
 
 - allow user to specify the default value of the parameter.
-
-**Minor Improvements**
-
-**Bugfixes**
+- add ``ignore_mapper_error`` and ``skip_mapper_prompt`` arguments to ``Maker.new(..)``.
+- add ``cleanup_output_dir`` argument to ``Maker.templaterize(...)``.
 
 **Miscellaneous**
+
+- add test on Python3.7, 3.8, 3.9, 3.10
 
 
 0.2.1 (2023-02-20)

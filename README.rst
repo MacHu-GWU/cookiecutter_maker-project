@@ -1,5 +1,5 @@
 
-.. image:: https://readthedocs.org/projects/cookiecutter_maker/badge/?version=latest
+.. .. image:: https://readthedocs.org/projects/cookiecutter_maker/badge/?version=latest
     :target: https://cookiecutter_maker.readthedocs.io/index.html
     :alt: Documentation Status
 
@@ -24,13 +24,13 @@
 ------
 
 
-.. image:: https://img.shields.io/badge/Link-Document-blue.svg
+.. .. image:: https://img.shields.io/badge/Link-Document-blue.svg
     :target: https://cookiecutter_maker.readthedocs.io/index.html
 
-.. image:: https://img.shields.io/badge/Link-API-blue.svg
+.. .. image:: https://img.shields.io/badge/Link-API-blue.svg
     :target: https://cookiecutter_maker.readthedocs.io/py-modindex.html
 
-.. image:: https://img.shields.io/badge/Link-Source_Code-blue.svg
+.. .. image:: https://img.shields.io/badge/Link-Source_Code-blue.svg
     :target: https://cookiecutter_maker.readthedocs.io/py-modindex.html
 
 .. image:: https://img.shields.io/badge/Link-Install-blue.svg
@@ -66,20 +66,21 @@ Run the following python script to convert your concrete project into a template
 
 .. code-block:: python
 
-    from cookiecutter_maker.maker import Maker
+    from cookiecutter_maker.api import Maker
 
     maker = Maker.new(
         # the input concrete project directory
         input_dir="/path-to-input-dir/my_awesome_project",
         # the output template project directory
         output_dir="/path-to-output-dir",
-        # define the pair of ``concrete string`` and ``parameter name``
+        # define the ``string to replace``, ``parameter name`` and ``default parameter value``
         mapper=[
             ("my_awesome_project", "package_name", "default_package_name"),
         ],
         # define what to include in the input directory
         # it is the relative path from the input directory
         # the rule is 'explicit exclude' > 'explicit include' > 'default include'
+        # if empty, then include all files and directories
         include=[],
         # define what to exclude in the input directory
         # it is the relative path from the input directory

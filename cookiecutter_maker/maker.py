@@ -55,6 +55,7 @@ class Maker:
             concrete string you want to replace, 2 is the parameter name, 3 is the
             default value for cookiecutter to prompt user to input.
         :param include: list of file path pattern that we include from the input dir
+            if empty, we include all files and directories.
         :param exclude: list of file path pattern that we exclude from the input dir
         :param no_render: list of file path pattern that we copy it without
             rendering (as it is)

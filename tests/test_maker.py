@@ -2,9 +2,8 @@
 
 import os
 import pytest
-import shutil
 from pathlib import Path
-from cookiecutter_maker.maker import Maker
+from cookiecutter_maker.api import Maker
 
 dir_here = Path(__file__).absolute().parent
 
