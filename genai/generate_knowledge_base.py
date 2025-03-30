@@ -30,8 +30,6 @@ gh_pipeline = GitHubPipeline(
         "Makefile",
         "poetry.toml",
         "pyproject.toml",
-        "bin/**/*.py",
-        "bin/**/*.rst",
         f"{PACKAGE_NAME}/**/*.py",
         "tests/**/*.py",
         "docs/source/**/index.rst",
