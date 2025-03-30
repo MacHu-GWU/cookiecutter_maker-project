@@ -4,6 +4,7 @@ cookiecutter_maker.egg-info/
 cookiecutter_maker-*/
 tests/output/
 tmp/
+bin/pywf_open_source/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

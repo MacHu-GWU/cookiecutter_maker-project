@@ -1,0 +1,163 @@
+# ==============================================================================
+# The [project] table defined by Official python.org
+#
+# Read: https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
+# ==============================================================================
+[project]
+name = "cookiecutter_maker"
+# Increment version before each release - follow `semantic versioning <https://semver.org/>`_
+# Currently, poetry 2.1.X doesn't support dynamic versioning
+# (Read https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#version)
+# So this value has to be aligned with the one in ``cookiecutter_pyproject_demo/_version.py``
+version = "0.3.1"
+description = "The reverse of Python cookiecutter, converting any concrete project into a template."
+# Read https://dev-exp-share.readthedocs.io/en/latest/search.html?q=Pick+An+Open+Source+License+For+Python+Project&check_keywords=yes&area=default
+# To pick a license and update the ``license``, ``classifier`` field in ``pyproject.toml``
+# And also update the ``LICENSE.txt`` file in the git repo.
+license = "MIT"
+license-files = ["LICENSE.txt", "AUTHORS.rst"]
+authors = [
+    { name = "Sanhe Hu", email = "husanhe@gmail.com" },
+]
+maintainers = [
+    { name = "Sanhe Hu", email = "husanhe@gmail.com" },
+]
+keywords = []
+readme = "README.rst"
+# Files to include in the package distribution
+include = [
+    "*.txt",
+    "*.rst",
+]
+# Files to exclude from the package
+exclude = [
+    "*.pyc",
+    "*.pyo",
+    "cookiecutter_pyproject_demo/docs/*",
+    "cookiecutter_pyproject_demo/tests/*",
+]
+requires-python = ">=3.9,<4.0"
+# Full list of classifiers: https://pypi.org/classifiers/
+classifier = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: Unix",
+    # Note: classfier like "Programming Language :: Python :: 3 :: Only",
+    # "Programming Language :: Python :: 3.X" is no longer needed,
+    # because we have ``requires-python`` field.
+]
+
+# ------------------------------------------------------------------------------
+# Core Dependencies
+# ------------------------------------------------------------------------------
+dependencies = [
+]
+
+# ------------------------------------------------------------------------------
+# Optional dependency that can be used in ``pip install ${your_project_name}[${feature_name}]``
+# Sometime this is also called "extras"
+# Read: https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#dependencies-optional-dependencies
+# ------------------------------------------------------------------------------
+[project.optional-dependencies]
+
+[project.urls]
+Homepage = "https://github.com/MacHu-GWU/cookiecutter_maker-project"
+Documentation = "https://cookiecutter-maker.readthedocs.io/en/latest/"
+Repository = "https://github.com/MacHu-GWU/cookiecutter_maker-project"
+Issues = "https://github.com/MacHu-GWU/cookiecutter_maker-project/issues"
+Changelog = "https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/release-history.rst"
+Download = "https://pypi.org/pypi/cookiecutter-maker#files"
+
+# For command line interface, read: https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#creating-executable-scripts
+[project.scripts]
+
+# The package itself supports a broad Python range, but includes optional/development
+# dependencies that are only compatible with a narrower version range.
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+
+# ==============================================================================
+# Poetry dependency groups. Note that this is not the "extras" dependency defined by Python.
+# It is a poetry only feature that totally different from ``[project.optional-dependencies]``
+#
+# Read: https://python-poetry.org/docs/pyproject/#dependencies-and-dependency-groups
+# ==============================================================================
+# Dev dependenceies
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+twine = ">=6.0.0,<7.0.0"
+wheel = ">=0.45.0,<1.0.0"
+build = ">=1.2.1,<2.0.0"
+rich = ">=13.8.1,<14.0.0"
+
+# ------------------------------------------------------------------------------
+# Documentation build dependenceies
+#
+# We only need to make sure doc dependencies are compatible with the
+# specific Python version defined we use for doc build and publish.
+# It doesn't have to be compatible with "requires-python" field.
+# ------------------------------------------------------------------------------
+[tool.poetry.group.doc]
+optional = true
+
+[tool.poetry.group.doc.dependencies]
+Sphinx = { version = ">=8.2.3,<9.0.0", python = ">=3.11" }
+# add copy button to code block
+sphinx-copybutton = { version = ">=0.5.2,<1.0.0", python = ">=3.11" }
+# add additional design pattern to sphinx
+sphinx-design = { version = ">=0.6.1,<1.0.0", python = ">=3.11" }
+# enable jinja syntax in reStructuredText
+sphinx-jinja = { version = ">=2.0.2,<3.0.0", python = ">=3.11" }
+# the furo sphinx theme
+furo = { version = "2024.8.6", python = ">=3.11" }
+# syntax highlight
+pygments = { version = ">=2.18.0,<3.0.0", python = ">=3.11" }
+# iPython
+ipython = { version = ">=8.34.0,<9.0.0", python = ">=3.11" }
+# add jupyter notebook in sphinx doc
+nbsphinx = { version = ">=0.8.12,<1.0.0", python = ">=3.11" }
+# generate reStructuredText in Python
+rstobj = "1.2.1"
+# automaticall generate .. toctree directives and API reference doc
+docfly = "2.0.3"
+
+# ------------------------------------------------------------------------------
+# Test dependenceies
+#
+# Because we need to test in all supported Python version in CI,
+# test dependencies has to be compatible with Python version defined in
+# "requires-python" field.
+# ------------------------------------------------------------------------------
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = ">=8.2.2,<9.0.0" # Testing framework
+pytest-cov = ">=6.0.0,<7.0.0" # Coverage reporting
+
+# ------------------------------------------------------------------------------
+# Automation (devops) dependenceies
+# ------------------------------------------------------------------------------
+[tool.poetry.group.auto]
+optional = true
+
+[tool.poetry.group.auto.dependencies]
+
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.9.0,<2.0.0"
+
+# python workflow tool config
+[tool.pywf]
+# The specific python version you use for local development
+dev_python = "3.11.8"
+
+# Read: https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#declaring-the-build-backend
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
