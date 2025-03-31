@@ -1,0 +1,20 @@
+[project]
+name = "my_package"
+version = "1.0.0"
+description = "..."
+license = "MIT"
+license-files = ["LICENSE.txt", "AUTHORS.rst"]
+authors = [
+    { name = "Alice", email = "alice@email.com" }, # author
+]
+maintainer = [
+    { name = "Alice", email = "alice@email.com" }, # maintainer
+]
+readme = "README.rst"
+requires-python = ">=3.9,<4.0"
+dependencies = [
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"

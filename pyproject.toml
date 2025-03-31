@@ -55,6 +55,7 @@ classifier = [
 # Core Dependencies
 # ------------------------------------------------------------------------------
 dependencies = [
+    "pathspec>=0.12.1,<1.0.0",
 ]
 
 # ------------------------------------------------------------------------------
@@ -78,7 +79,7 @@ Download = "https://pypi.org/pypi/cookiecutter-maker#files"
 # The package itself supports a broad Python range, but includes optional/development
 # dependencies that are only compatible with a narrower version range.
 [tool.poetry.dependencies]
-python = ">=3.9,<4.0"
+python = ">=3.11,<4.0"
 
 # ==============================================================================
 # Poetry dependency groups. Note that this is not the "extras" dependency defined by Python.
