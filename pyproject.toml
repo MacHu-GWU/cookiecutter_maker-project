@@ -142,7 +142,7 @@ codecov_token_name = "sanhe-dev"
 # readthedocs.org user name (for documentation hosting)
 readthedocs_username = "machugwu"
 # Readthedocs project name, usually it is the same as your project name
-readthedocs_project_name = "cookiecutter_pywf_open_source_demo"
+readthedocs_project_name = "cookiecutter_maker"
 # Readthedocs personal access token
 readthedocs_token_name = "sanhe-dev"
 
