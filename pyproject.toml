@@ -62,9 +62,52 @@ dependencies = [
 # Optional dependency that can be used in ``pip install ${your_project_name}[${feature_name}]``
 # Sometime this is also called "extras"
 # Read: https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#dependencies-optional-dependencies
+#
+# IMPORTANT: all optional dependencies has to be compatible with the "requires-python" field
 # ------------------------------------------------------------------------------
 [project.optional-dependencies]
 
+# ------------------------------------------------------------------------------
+# Local Development dependenceies
+# ------------------------------------------------------------------------------
+dev = [
+    "twine>=6.0.0,<7.0.0", # distribute package to PyPI
+    "wheel>=0.45.0,<1.0.0", # build wheel package
+    "build>=1.2.1,<2.0.0", # build source distribution
+    "rich>=13.8.1,<14.0.0", # pretty print
+]
+
+# ------------------------------------------------------------------------------
+# (Unit/Coverage/Integration/Load) Test dependenceies
+# ------------------------------------------------------------------------------
+test = [
+    "pytest>=8.2.2,<9.0.0", # Testing framework
+    "pytest-cov>=6.0.0,<7.0.0", # Coverage reporting
+]
+
+# ------------------------------------------------------------------------------
+# Documentation build dependenceies
+# ------------------------------------------------------------------------------
+doc = [
+    "Sphinx>=7.4.7,<8.0.0",
+    "sphinx-copybutton>=0.5.2,<1.0.0", # add copy button to code block
+    "sphinx-design>=0.6.1,<1.0.0", # add additional design pattern to sphinx
+    "sphinx-jinja>=2.0.2,<3.0.0", # enable jinja syntax in reStructuredText
+    "furo==2024.8.6", # the furo sphinx theme
+    "pygments>=2.18.0,<3.0.0", # syntax highlight
+    "ipython>=8.18.1,<8.19.0", # interactive Python
+    "nbsphinx>=0.8.12,<1.0.0", # add jupyter notebook in sphinx doc
+    "rstobj==1.2.1", # generate reStructuredText from Python code
+    "docfly==2.0.3", # automaticall generate .. toctree directives and API reference doc
+]
+
+# ------------------------------------------------------------------------------
+# Automation (devops) dependenceies
+# ------------------------------------------------------------------------------
+auto = [
+]
+
+# Quick Links
 [project.urls]
 Homepage = "https://github.com/MacHu-GWU/cookiecutter_maker-project"
 Documentation = "https://cookiecutter-maker.readthedocs.io/en/latest/"
@@ -75,79 +118,6 @@ Download = "https://pypi.org/pypi/cookiecutter-maker#files"
 
 # For command line interface, read: https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#creating-executable-scripts
 [project.scripts]
-
-# The package itself supports a broad Python range, but includes optional/development
-# dependencies that are only compatible with a narrower version range.
-[tool.poetry.dependencies]
-python = ">=3.11,<4.0"
-
-# ==============================================================================
-# Poetry dependency groups. Note that this is not the "extras" dependency defined by Python.
-# It is a poetry only feature that totally different from ``[project.optional-dependencies]``
-#
-# Read: https://python-poetry.org/docs/pyproject/#dependencies-and-dependency-groups
-# ==============================================================================
-# Dev dependenceies
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.dev.dependencies]
-twine = ">=6.0.0,<7.0.0"
-wheel = ">=0.45.0,<1.0.0"
-build = ">=1.2.1,<2.0.0"
-rich = ">=13.8.1,<14.0.0"
-
-# ------------------------------------------------------------------------------
-# Documentation build dependenceies
-#
-# We only need to make sure doc dependencies are compatible with the
-# specific Python version defined we use for doc build and publish.
-# It doesn't have to be compatible with "requires-python" field.
-# ------------------------------------------------------------------------------
-[tool.poetry.group.doc]
-optional = true
-
-[tool.poetry.group.doc.dependencies]
-Sphinx = { version = ">=8.2.3,<9.0.0", python = ">=3.11" }
-# add copy button to code block
-sphinx-copybutton = { version = ">=0.5.2,<1.0.0", python = ">=3.11" }
-# add additional design pattern to sphinx
-sphinx-design = { version = ">=0.6.1,<1.0.0", python = ">=3.11" }
-# enable jinja syntax in reStructuredText
-sphinx-jinja = { version = ">=2.0.2,<3.0.0", python = ">=3.11" }
-# the furo sphinx theme
-furo = { version = "2024.8.6", python = ">=3.11" }
-# syntax highlight
-pygments = { version = ">=2.18.0,<3.0.0", python = ">=3.11" }
-# iPython
-ipython = { version = ">=8.34.0,<9.0.0", python = ">=3.11" }
-# add jupyter notebook in sphinx doc
-nbsphinx = { version = ">=0.8.12,<1.0.0", python = ">=3.11" }
-# generate reStructuredText in Python
-rstobj = "1.2.1"
-# automaticall generate .. toctree directives and API reference doc
-docfly = "2.0.3"
-
-# ------------------------------------------------------------------------------
-# Test dependenceies
-#
-# Because we need to test in all supported Python version in CI,
-# test dependencies has to be compatible with Python version defined in
-# "requires-python" field.
-# ------------------------------------------------------------------------------
-[tool.poetry.group.test]
-optional = true
-
-[tool.poetry.group.test.dependencies]
-pytest = ">=8.2.2,<9.0.0" # Testing framework
-pytest-cov = ">=6.0.0,<7.0.0" # Coverage reporting
-cookiecutter = ">=2.6.0,<3.0.0"
-
-# ------------------------------------------------------------------------------
-# Automation (devops) dependenceies
-# ------------------------------------------------------------------------------
-[tool.poetry.group.auto]
-optional = true
 
 [tool.poetry.group.auto.dependencies]
 pywf_open_source = ">=0.0.2,<1.0.0"

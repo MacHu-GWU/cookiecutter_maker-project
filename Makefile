@@ -87,3 +87,16 @@ build: ## Build Python library distribution package
 
 publish: ## Publish Python library to Public PyPI
 	~/.pyenv/shims/python ./bin/s05_2_publish_package.py
+
+
+
+release: ## Create Github Release using current version
+	~/.pyenv/shims/python ./bin/s05_3_create_release.py
+
+
+setup-codecov: ## Setup Codecov Upload token in GitHub Action Secrets
+	~/.pyenv/shims/python ./bin/s06_1_setup_codecov.py
+
+
+setup-rtd: ## Create ReadTheDocs Project
+	~/.pyenv/shims/python ./bin/s06_2_setup_readthedocs.py
