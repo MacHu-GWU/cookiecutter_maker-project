@@ -34,6 +34,10 @@ def compare_directory(
         if p_1.is_file():
             p_2 = dir_2.joinpath(p_1.relative_to(dir_1))
             if p_1.read_bytes() != p_2.read_bytes():
+                print("----- p_1 content -----")
+                print(p_1.read_text(encoding="utf-8"))
+                print("----- p_2 content -----")
+                print(p_2.read_text(encoding="utf-8"))
                 raise ValueError(f"The content of {p_1} and {p_2} are different.")
 
 

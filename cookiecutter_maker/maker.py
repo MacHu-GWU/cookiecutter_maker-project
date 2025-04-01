@@ -112,8 +112,8 @@ class Maker:
 
         # Print processing information if verbose mode is enabled
         if self.verbose:
-            print(f"from: {p_before}")
-            print(f"  to: {p_after}")
+            print(f"from: {p_before.relative_to(self.dir_input)}")
+            print(f"  to: {p_after.relative_to(self.dir_output)}")
 
         # For files that should be copied without rendering, just copy as-is
         if self.path_matcher.is_render(str(relpath)) is False:
@@ -168,8 +168,8 @@ class Maker:
 
         # Print processing information if verbose mode is enabled
         if self.verbose:
-            print(f"from: {p_before}")
-            print(f"  to: {p_after}")
+            print(f"from: {p_before.relative_to(self.dir_input)}")
+            print(f"  to: {p_after.relative_to(self.dir_output)}")
 
         # Create the directory (and parent directories if needed)
         p_after.mkdir(parents=True, exist_ok=True)
