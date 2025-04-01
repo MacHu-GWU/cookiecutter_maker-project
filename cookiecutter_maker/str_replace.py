@@ -112,6 +112,19 @@ double_curly_brackets_mapper = {
 }
 
 def replace_double_curly_brackets(text: str) -> str:
+    """
+    Replace double curly brackets with raw Jinja2 template syntax.
+
+    When converting a seed project to a cookiecutter template, Jinja2 syntax
+    in the original files needs special handling. This function replaces the
+    standard Jinja2 delimiters ('{{' and '}}') with raw expressions that will be
+    preserved as literal curly brackets in the generated template, rather than
+    being interpreted as Jinja2/cookiecutter variables.
+
+    This ensures that original Jinja2 syntax in the seed project is preserved
+    as literal text in the generated cookiecutter template, preventing conflicts
+    with cookiecutter's own variable substitution which also uses curly brackets.
+    """
     for before, after in double_curly_brackets_mapper.items():
         text = text.replace(before, after)
     return text

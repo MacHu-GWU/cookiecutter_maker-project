@@ -57,6 +57,7 @@ def run_case(
 
     # template -> concrete
     with temp_cwd(maker.dir_output):
+        # ref: https://cookiecutter.readthedocs.io/en/stable/advanced/calling_from_python.html
         cookiecutter(
             template=f"{maker.dir_output}",
             no_input=True,

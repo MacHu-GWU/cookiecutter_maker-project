@@ -6,4 +6,7 @@
         <h1>{{ title }}</h1>
         <p>{{ content }}</p>
     </body>
+    {% for item in item_list %}
+    <li>{{ item }}</li>
+    {% endfor %}
 </html>

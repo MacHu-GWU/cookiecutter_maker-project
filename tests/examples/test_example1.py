@@ -3,15 +3,16 @@
 from pathlib import Path
 from cookiecutter_maker.api import Parameter, Maker
 from cookiecutter_maker.tests.case import run_case
+from cookiecutter_maker.paths import dir_project_root
 
-dir_here = Path(__file__).absolute().parent
+dir_example1 = dir_project_root.joinpath("examples", "example1")
 
 
 def test():
     print("")
     maker = Maker(
-        dir_input=dir_here.joinpath("my_package-project"),
-        dir_output=dir_here.joinpath("tmp"),
+        dir_input=dir_example1.joinpath("my_package-project"),
+        dir_output=dir_example1.joinpath("tmp"),
         parameters=[
             Parameter(
                 selector=["my_package"],
@@ -82,15 +83,17 @@ def test():
         exclude=[
             "LICENSE.txt",
         ],
-        no_render=[],
-        dir_hooks=dir_here.joinpath("hooks"),
+        no_render=[
+            "*.jinja",
+        ],
+        dir_hooks=dir_example1.joinpath("hooks"),
     )
     run_case(
         maker=maker,
-        dir_expected_template=dir_here.joinpath(
+        dir_expected_template=dir_example1.joinpath(
             "{{ cookiecutter.package_name }}-project"
         ),
-        dir_expected_project=dir_here.joinpath("tmp", "my_package-project"),
+        dir_expected_project=dir_example1.joinpath("tmp", "my_package-project"),
     )
 
 

@@ -204,5 +204,4 @@ class PathMatcher:
         """
         if self.no_render_spec is None:
             return True
-        print(f"check no render {path = }")
         return not self.no_render_spec.match_file(path)
