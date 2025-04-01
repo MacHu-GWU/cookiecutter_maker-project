@@ -15,6 +15,24 @@ Backlog (TODO)
 **Miscellaneous**
 
 
+1.0.1 (2025-04-01)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**💥Breaking Changes**
+
+- Rework the API:
+    - now it uses more reliable ``pathspec`` to match files.
+    - now it support using ``selector`` to precisely select the sub string you want to substitute.
+- Drop Python3.8 support. Now only support Python3.9+.
+
+**Features and Improvements**
+
+- Add ``Parameter`` to the public API.
+
+**Minor Improvements**
+
+- Add a comprehensive integration test.
+
+
 0.3.1 (2023-06-04)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Features and Improvements**
