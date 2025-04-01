@@ -141,6 +141,7 @@ optional = true
 [tool.poetry.group.test.dependencies]
 pytest = ">=8.2.2,<9.0.0" # Testing framework
 pytest-cov = ">=6.0.0,<7.0.0" # Coverage reporting
+cookiecutter = ">=2.6.0,<3.0.0"
 
 # ------------------------------------------------------------------------------
 # Automation (devops) dependenceies
@@ -149,6 +150,7 @@ pytest-cov = ">=6.0.0,<7.0.0" # Coverage reporting
 optional = true
 
 [tool.poetry.group.auto.dependencies]
+pywf_open_source = ">=0.0.2,<1.0.0"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.9.0,<2.0.0"
@@ -157,6 +159,21 @@ poetry-plugin-export = ">=1.9.0,<2.0.0"
 [tool.pywf]
 # The specific python version you use for local development
 dev_python = "3.11.8"
+# github.com account name (for unit test)
+github_account = "MacHu-GWU"
+# github.com personal access token
+github_token_name = "sanhe-dev"
+# codecov.io (for code coverage test report) account name
+# If you use GitHub account to login codecov.io, then it is the same as your github account
+codecov_account = "MacHu-GWU"
+# Codecov personal access token
+codecov_token_name = "sanhe-dev"
+# readthedocs.org user name (for documentation hosting)
+readthedocs_username = "machugwu"
+# Readthedocs project name, usually it is the same as your project name
+readthedocs_project_name = "cookiecutter_pywf_open_source_demo"
+# Readthedocs personal access token
+readthedocs_token_name = "sanhe-dev"
 
 # Read: https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#declaring-the-build-backend
 [build-system]

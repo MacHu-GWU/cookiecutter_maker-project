@@ -3,4 +3,4 @@
 
 from pywf import pywf
 
-pywf.poetry_export(with_hash=False, real_run=True, verbose=True)
+pywf.setup_readthedocs_project(real_run=True, verbose=True)

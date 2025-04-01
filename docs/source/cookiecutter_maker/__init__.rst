@@ -13,5 +13,7 @@ sub packages and modules
     api <api>
     exc <exc>
     maker <maker>
-    strutils <strutils>
+    parameter <parameter>
+    path_matcher <path_matcher>
+    str_replace <str_replace>
     

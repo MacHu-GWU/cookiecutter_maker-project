@@ -3,4 +3,4 @@
 
 from pywf import pywf
 
-pywf.poetry_export(with_hash=False, real_run=True, verbose=True)
+pywf.publish_to_github_release(real_run=True, verbose=True)
