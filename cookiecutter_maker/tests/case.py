@@ -1,12 +1,33 @@
-# -*- coding: utf-8 -*-
-
 import shutil
+import difflib
 from pathlib import Path
 from cookiecutter.main import cookiecutter
 
 from ..vendor.better_pathlib import temp_cwd
 
 from ..maker import Maker
+
+
+def display_diff(
+    path_1: Path,
+    path_2: Path,
+):
+    with path_1.open("r", encoding="utf-8") as f1:
+        f1_lines = f1.readlines()
+    with path_2.open("r", encoding="utf-8") as f2:
+        f2_lines = f2.readlines()
+
+    # Get unified diff
+    diff = difflib.unified_diff(
+        f1_lines,
+        f2_lines,
+        fromfile="file1.txt",
+        tofile="file2.txt",
+        lineterm="",
+    )
+    # Print diff
+    for line in diff:
+        print(line)
 
 
 def compare_directory(
@@ -34,10 +55,7 @@ def compare_directory(
         if p_1.is_file():
             p_2 = dir_2.joinpath(p_1.relative_to(dir_1))
             if p_1.read_bytes() != p_2.read_bytes():
-                print("----- p_1 content -----")
-                print(p_1.read_text(encoding="utf-8"))
-                print("----- p_2 content -----")
-                print(p_2.read_text(encoding="utf-8"))
+                display_diff(p_1, p_2)
                 raise ValueError(f"The content of {p_1} and {p_2} are different.")
 
 
@@ -55,8 +73,8 @@ def run_case(
 
     # check template dir
     compare_directory(
-        dir_1=maker.dir_template,
-        dir_2=dir_expected_template,
+        dir_1=dir_expected_template,
+        dir_2=maker.dir_template,
     )
 
     # template -> concrete
@@ -70,6 +88,6 @@ def run_case(
 
     # check concrete dir
     compare_directory(
-        dir_1=maker.dir_input,
-        dir_2=dir_expected_project,
+        dir_1=dir_expected_project,
+        dir_2=maker.dir_input,
     )

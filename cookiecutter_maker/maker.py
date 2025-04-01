@@ -260,6 +260,9 @@ class Maker:
         if self.no_render:
             data["_copy_without_render"] = self.no_render
 
+        # Force to use POSIX line endings
+        data["_new_lines"] = "\n"
+
         # Write the JSON file with nice formatting
         self.path_cookiecutter_json.write_text(
             json.dumps(data, indent=4, ensure_ascii=False),
