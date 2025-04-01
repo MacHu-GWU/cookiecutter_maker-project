@@ -67,8 +67,23 @@ def test():
                 name="maintainer_email",
                 default="alice@email.com",
             ),
+            Parameter(
+                selector=[
+                    'license = "MIT"',
+                    "MIT",
+                ],
+                name="license",
+                choice=["MIT", "AGPL-3.0-or-later", "Proprietary"],
+            ),
+        ],
+        include=[
+
+        ],
+        exclude=[
+            "LICENSE.txt",
         ],
         no_render=[],
+        dir_hooks=dir_here.joinpath("hooks"),
     )
     run_case(
         maker=maker,

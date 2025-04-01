@@ -23,16 +23,18 @@ class Parameter:
 
     selector: list[str] = dataclasses.field()
     name: str = dataclasses.field()
-    default: T.Any = dataclasses.field()
+    default: T.Optional[T.Any] = dataclasses.field(default=None)
     choice: list[T.Any] = dataclasses.field(default_factory=list)
     include: list[str] = dataclasses.field(default_factory=list)
     exclude: list[str] = dataclasses.field(default_factory=list)
 
     def _validate(self):
-        # if self.choice:
-        #     if self.default not in self.choice:
-        #         raise ValueError(f"{self.default} is not in {self.choice}")
-        pass
+        if self.default is None:
+            if len(self.choice) == 0:
+                raise ValueError("You have to define either a default value or a list of choices.")
+        else:
+            if len(self.choice):
+                raise ValueError("You can't define both a default value and a list of choices.")
 
     def __post_init__(self):  # pragma: no cover
         validate_selector(self.selector)

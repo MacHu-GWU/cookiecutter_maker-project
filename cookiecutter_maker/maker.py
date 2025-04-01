@@ -41,16 +41,11 @@ class Maker:
     include: list[str] = dataclasses.field(default_factory=list)
     exclude: list[str] = dataclasses.field(default_factory=list)
     no_render: list[str] = dataclasses.field(default_factory=list)
+    dir_hooks: T.Optional[Path] = dataclasses.field(default=None)
     verbose: bool = dataclasses.field(default=True)
 
-    def _print(self):
-        if self.verbose:
-            print("---------- parameters ----------")
-            for param in self.parameters:
-                print(f"- {param.selector[0]!r} -> {param.placeholder!r}")
-
     def __post_init__(self):
-        self._print()
+        pass
 
     @cached_property
     def path_matcher(self) -> PathMatcher:
@@ -210,6 +205,17 @@ class Maker:
             raise FileExistsError(
                 f"Output directory {self.dir_output!r} already exists!!"
             )
+        if self.dir_hooks is not None:
+            if self.dir_hooks.exists() is False:
+                raise FileNotFoundError(
+                    f"Hooks directory {self.dir_hooks!r} does not exist!!"
+                )
+
+    def _print_parameters(self):
+        if self.verbose:
+            print("---------- parameters ----------")
+            for param in self.parameters:
+                print(f"- {param.selector[0]!r} -> {param.placeholder!r}")
 
     def write_cookiecutter_json(self):
         data = {param.name: param.default for param in self.parameters}
@@ -221,7 +227,17 @@ class Maker:
             encoding="utf-8",
         )
 
+    def copy_hooks(self):
+        if self.dir_hooks is None:
+            return
+        dir_hooks_output = self.dir_output.joinpath("hooks")
+        shutil.copytree(src=self.dir_hooks, dst=dir_hooks_output)
+
     def make_template(self):
         self.readiness_check()
+        self._print_parameters()
+        if self.verbose:
+            print("---------- make template ----------")
         self._make_template(dir_src=self.dir_input)
         self.write_cookiecutter_json()
+        self.copy_hooks()

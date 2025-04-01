@@ -4,6 +4,8 @@ import shutil
 from pathlib import Path
 from cookiecutter.main import cookiecutter
 
+from ..vendor.better_pathlib import temp_cwd
+
 from ..maker import Maker
 
 
@@ -54,11 +56,12 @@ def run_case(
     )
 
     # template -> concrete
-    cookiecutter(
-        template=f"{maker.dir_output}",
-        no_input=True,
-        output_dir=f"{maker.dir_output}",
-    )
+    with temp_cwd(maker.dir_output):
+        cookiecutter(
+            template=f"{maker.dir_output}",
+            no_input=True,
+            output_dir=f"{maker.dir_output}",
+        )
 
     # check concrete dir
     compare_directory(
