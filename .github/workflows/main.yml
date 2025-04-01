@@ -47,7 +47,7 @@ jobs:
           python -m pip install poetry
           poetry install --extras test
       - name: "Run pytest"
-        run: "poetry run pytest tests --cov=cookiecutter_maker"
+        run: "poetry run pytest tests --cov=cookiecutter_maker --cov-report=xml"
       # don't forget to goto codecov.io, enable your repo, copy the token
       # create an CODECOV_TOKEN env var in GitHub actions secret
       - name: "Upload coverage to Codecov"
@@ -56,4 +56,6 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: MacHu-GWU/cookiecutter_maker-project
+          file: ./coverage.xml   # Explicitly specify the coverage file
           fail_ci_if_error: true
+          verbose: true
