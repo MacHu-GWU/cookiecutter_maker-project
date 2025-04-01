@@ -47,7 +47,7 @@ jobs:
           python -m pip install poetry
           poetry install --extras test
       - name: "Run pytest"
-        run: "python -m pytest tests --cov=cookiecutter_maker"
+        run: "poetry run pytest tests --cov=cookiecutter_maker"
       # don't forget to goto codecov.io, enable your repo, copy the token
       # create an CODECOV_TOKEN env var in GitHub actions secret
       - name: "Upload coverage to Codecov"
