@@ -54,9 +54,22 @@ def compare_directory(
     for p_1 in path_list_1:
         if p_1.is_file():
             p_2 = dir_2.joinpath(p_1.relative_to(dir_1))
-            if p_1.read_bytes() != p_2.read_bytes():
+            b_1 = p_1.read_bytes()
+            try:
+                s_1 = b_1.decode("utf-8")
+            except UnicodeDecodeError:
+                b_2 = p_2.read_bytes()
+                if b_1 != b_2:
+                    raise ValueError(f"The binary content of {p_1} and {p_2} are different.")
+                continue
+
+            with p_1.open("r", encoding="utf-8") as f_1:
+                lines_1 = f_1.readlines()
+            with p_2.open("r", encoding="utf-8") as f_2:
+                lines_2 = f_2.readlines()
+            if lines_1 != lines_2:
                 display_diff(p_1, p_2)
-                raise ValueError(f"The content of {p_1} and {p_2} are different.")
+                raise ValueError(f"The text content of {p_1} and {p_2} are different.")
 
 
 def run_case(
