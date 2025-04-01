@@ -49,6 +49,8 @@ gh_pipeline = GitHubPipeline(
         "examples/*/tmp/*.*",
         f".DS_Store",
         f"*.pyc",
+        f"*.ico",
+        f"*.png",
     ],
     dir_out=dir_tmp,
 )

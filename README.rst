@@ -74,63 +74,6 @@ Documentation
 For detailed usage, configuration options, and advanced examples, please visit our `Documentation <https://cookiecutter-maker.readthedocs.io/en/latest/>`_ Site.
 
 
-Usage Example
-------------------------------------------------------------------------------
-Run the following python script to convert your concrete project into a template project:
-
-.. code-block:: python
-
-    from cookiecutter_maker.api import Maker
-
-    maker = Maker.new(
-        # the input concrete project directory
-        input_dir="/path-to-input-dir/my_awesome_project",
-        # the output template project directory
-        output_dir="/path-to-output-dir",
-        # define the ``string to replace``, ``parameter name`` and ``default parameter value``
-        mapper=[
-            ("my_awesome_project", "package_name", "default_package_name"),
-        ],
-        # define what to include in the input directory
-        # it is the relative path from the input directory
-        # the rule is 'explicit exclude' > 'explicit include' > 'default include'
-        # if empty, then include all files and directories
-        include=[],
-        # define what to exclude in the input directory
-        # it is the relative path from the input directory
-        exclude=[
-            # dir
-            ".venv",
-            ".pytest_cache",
-            ".git",
-            ".idea",
-            "build",
-            "dist",
-            "htmlcov",
-            # file
-            ".coverage",
-        ],
-        # define what to copy as it is without rending
-        # usually you should ignore jinja template files
-        no_render=[
-            "*.tpl",
-        ],
-        # over write the output location if already exists
-        overwrite=True,
-        # mapper could have one key is substring of another key
-        # if this is True, it will ignore the error
-        ignore_mapper_error=False,
-        # when mapper could have one key is substring of another key
-        # it will prompt you to confirm to continue
-        skip_mapper_prompt=True,
-        # do you want to print debug information?
-        debug=True,
-    )
-    maker.templaterize()
-
-In this example, it will create a directory ``{{ cookiecutter.package_name }}`` and a json file ``cookiecutter.json``. Now you can follow the `cookiecutter instruction <https://cookiecutter.readthedocs.io>`_ to generate more concrete projects.
-
-
 .. _install:
 
 Install
