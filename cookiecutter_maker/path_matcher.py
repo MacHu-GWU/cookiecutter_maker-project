@@ -129,7 +129,10 @@ class PathMatcher:
 
     @classmethod
     def new(
-        cls, include: list[str], exclude: list[str], no_render: list[str] = None
+        cls,
+        include: list[str],
+        exclude: list[str],
+        no_render: list[str] = None,
     ) -> "PathMatcher":
         """
         Create a new :class:`PathMatcher` instance with the given include and exclude patterns.
@@ -201,4 +204,5 @@ class PathMatcher:
         """
         if self.no_render_spec is None:
             return True
+        print(f"check no render {path = }")
         return not self.no_render_spec.match_file(path)

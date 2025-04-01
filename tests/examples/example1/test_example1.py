@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import pytest
 from pathlib import Path
 from cookiecutter_maker.api import Parameter, Maker
-from cookiecutter_maker.paths import dir_unit_test
 from cookiecutter_maker.tests.case import run_case
 
 dir_here = Path(__file__).absolute().parent
 
 
 def test():
+    print("")
     maker = Maker(
         dir_input=dir_here.joinpath("my_package-project"),
         dir_output=dir_here.joinpath("tmp"),
@@ -26,20 +25,57 @@ def test():
             ),
             Parameter(
                 selector=[
-                    'version = "1.0.0"',
-                    "1.0.0",
+                    'version = "0.1.1"',
+                    "0.1.1",
                 ],
                 name="version",
                 default="0.1.1",
             ),
+            Parameter(
+                selector=[
+                    'authors = [\n    { name = "Alice"',
+                    'name = "Alice"',
+                    "Alice",
+                ],
+                name="author",
+                default="Alice",
+            ),
+            Parameter(
+                selector=[
+                    'email = "alice@email.com" }, # author',
+                    'email = "alice@email.com"',
+                    "alice@email.com",
+                ],
+                name="author_email",
+                default="alice@email.com",
+            ),
+            Parameter(
+                selector=[
+                    'maintainers = [\n    { name = "Alice"',
+                    'name = "Alice"',
+                    "Alice",
+                ],
+                name="maintainer",
+                default="Alice",
+            ),
+            Parameter(
+                selector=[
+                    'email = "alice@email.com" }, # maintainer',
+                    'email = "alice@email.com"',
+                    "alice@email.com",
+                ],
+                name="maintainer_email",
+                default="alice@email.com",
+            ),
         ],
-        no_render=[
-            "my_package/template/*.jinja",
-        ],
+        no_render=[],
     )
     run_case(
         maker=maker,
-        dir_expected=dir_here.joinpath("{{ cookiecutter.package_name }}-project"),
+        dir_expected_template=dir_here.joinpath(
+            "{{ cookiecutter.package_name }}-project"
+        ),
+        dir_expected_project=dir_here.joinpath("tmp", "my_package-project"),
     )
 
 

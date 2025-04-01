@@ -17,10 +17,10 @@ description = "The reverse of Python cookiecutter, converting any concrete proje
 license = "MIT"
 license-files = ["LICENSE.txt", "AUTHORS.rst"]
 authors = [
-    { name = "Sanhe Hu", email = "husanhe@gmail.com" },
+    { name = "Sanhe Hu", email = "husanhe@gmail.com" }, # author
 ]
 maintainers = [
-    { name = "Sanhe Hu", email = "husanhe@gmail.com" },
+    { name = "Sanhe Hu", email = "husanhe@gmail.com" }, # maintainer
 ]
 keywords = []
 readme = "README.rst"

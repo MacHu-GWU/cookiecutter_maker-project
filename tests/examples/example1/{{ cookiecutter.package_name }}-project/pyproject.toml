@@ -1,0 +1,20 @@
+[project]
+name = "{{ cookiecutter.package_name }}"
+version = "{{ cookiecutter.version }}"
+description = "..."
+license = "MIT"
+license-files = ["LICENSE.txt"]
+authors = [
+    { name = "{{ cookiecutter.author }}", email = "{{ cookiecutter.author_email }}" }, # author
+]
+maintainers = [
+    { name = "{{ cookiecutter.maintainer }}", email = "{{ cookiecutter.maintainer_email }}" }, # maintainer
+]
+readme = "README.rst"
+requires-python = ">=3.9,<4.0"
+dependencies = [
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"

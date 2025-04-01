@@ -2,8 +2,10 @@
 
 import shutil
 from pathlib import Path
+from cookiecutter.main import cookiecutter
 
 from ..maker import Maker
+
 
 def compare_directory(
     dir_1: Path,
@@ -27,18 +29,39 @@ def compare_directory(
         raise ValueError("The files in the two directories are different.")
 
     for p_1 in path_list_1:
-        p_2 = dir_2.joinpath(p_1.relative_to(dir_1))
-        if p_1.read_bytes() != p_2.read_bytes():
-            raise ValueError(f"The content of {p_1} and {p_2} are different.")
+        if p_1.is_file():
+            p_2 = dir_2.joinpath(p_1.relative_to(dir_1))
+            if p_1.read_bytes() != p_2.read_bytes():
+                raise ValueError(f"The content of {p_1} and {p_2} are different.")
+
 
 def run_case(
     maker: Maker,
-    dir_expected: Path,
+    dir_expected_template: Path,
+    dir_expected_project: Path,
 ):
+    # clean up output (temp) folder
     if maker.dir_output.exists():
         shutil.rmtree(maker.dir_output)
+
+    # seed -> template
     maker.make_template()
-    # compare_directory(
-    #     dir_1=maker.dir_template,
-    #     dir_2=dir_expected,
-    # )
+
+    # check template dir
+    compare_directory(
+        dir_1=maker.dir_template,
+        dir_2=dir_expected_template,
+    )
+
+    # template -> concrete
+    cookiecutter(
+        template=f"{maker.dir_output}",
+        no_input=True,
+        output_dir=f"{maker.dir_output}",
+    )
+
+    # check concrete dir
+    compare_directory(
+        dir_1=maker.dir_input,
+        dir_2=dir_expected_project,
+    )

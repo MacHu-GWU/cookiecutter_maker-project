@@ -43,27 +43,22 @@ class Maker:
     no_render: list[str] = dataclasses.field(default_factory=list)
     verbose: bool = dataclasses.field(default=True)
 
-    @staticmethod
-    def _validate_input_dir(
-        dir_input: Path,
-    ):
-        if dir_input.exists() is False:
-            raise FileNotFoundError(f"Input directory {dir_input!r} does not exist!!")
-
-    @staticmethod
-    def _validate_output_dir(
-        dir_output: Path,
-    ):
-        if dir_output.exists():
-            raise FileExistsError(f"Output directory {dir_output!r} already exists!!")
+    def _print(self):
+        if self.verbose:
+            print("---------- parameters ----------")
+            for param in self.parameters:
+                print(f"- {param.selector[0]!r} -> {param.placeholder!r}")
 
     def __post_init__(self):
-        self._validate_input_dir(self.dir_input)
-        self._validate_output_dir(self.dir_output)
+        self._print()
 
     @cached_property
     def path_matcher(self) -> PathMatcher:
-        return PathMatcher.new(include=self.include, exclude=self.exclude)
+        return PathMatcher.new(
+            include=self.include,
+            exclude=self.exclude,
+            no_render=self.no_render,
+        )
 
     @cached_property
     def dir_template(self) -> Path:
@@ -116,8 +111,8 @@ class Maker:
 
         :param p_before: the file path in the input directory.
 
-        :returns: the file path in the output directory. If the file is ignored,
-            then return None.
+        :returns: the file path in the output directory.
+            If the file is ignored, then return None.
         """
         relpath = p_before.relative_to(self.dir_input)
 
@@ -148,16 +143,22 @@ class Maker:
             p_after.write_bytes(b)
             return p_after
 
-        text = replace_with_parameter(
+        text_content = replace_double_curly_brackets(text_content)
+        text_content = replace_with_parameter(
             text=text_content,
             param_list=self.parameters,
         )
-        p_after.write_text(text, encoding="utf-8")
+        p_after.write_text(text_content, encoding="utf-8")
         return p_after
 
     def _make_template_dir(self, p_before: Path) -> T.Optional[Path]:
         """
-        Create a templaterized directory in the output directory (empty folder).
+        Convert a directory to a template in the output directory.
+
+        :param p_before: the directory path in the input directory.
+
+        :returns: the directory path in the output directory.
+            If the directory is ignored, then return None.
         """
         relpath = p_before.relative_to(self.dir_input)
 
@@ -200,5 +201,27 @@ class Maker:
         #     cookiecutter_json_data[parameter_name] = concrete_string
         # path_cookiecutter_json.write_text(json.dumps(cookiecutter_json_data, indent=4))
 
+    def readiness_check(self):
+        if self.dir_input.exists() is False:
+            raise FileNotFoundError(
+                f"Input directory {self.dir_input!r} does not exist!!"
+            )
+        if self.dir_output.exists():
+            raise FileExistsError(
+                f"Output directory {self.dir_output!r} already exists!!"
+            )
+
+    def write_cookiecutter_json(self):
+        data = {param.name: param.default for param in self.parameters}
+        for param in self.parameters:
+            key, value = param.to_cookiecutter_key_value()
+            data[key] = value
+        self.path_cookiecutter_json.write_text(
+            json.dumps(data, indent=4, ensure_ascii=False),
+            encoding="utf-8",
+        )
+
     def make_template(self):
+        self.readiness_check()
         self._make_template(dir_src=self.dir_input)
+        self.write_cookiecutter_json()

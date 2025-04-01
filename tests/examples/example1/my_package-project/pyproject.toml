@@ -1,13 +1,13 @@
 [project]
 name = "my_package"
-version = "1.0.0"
+version = "0.1.1"
 description = "..."
 license = "MIT"
-license-files = ["LICENSE.txt", "AUTHORS.rst"]
+license-files = ["LICENSE.txt"]
 authors = [
     { name = "Alice", email = "alice@email.com" }, # author
 ]
-maintainer = [
+maintainers = [
     { name = "Alice", email = "alice@email.com" }, # maintainer
 ]
 readme = "README.rst"
