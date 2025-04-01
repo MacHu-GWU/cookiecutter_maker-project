@@ -126,6 +126,7 @@ class Maker:
         # Try to decode as text; if it fails, treat as binary
         try:
             text_content = b.decode("utf-8")
+            text_content = p_before.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             # For binary files, copy as-is without processing
             p_after.write_bytes(b)
@@ -261,7 +262,7 @@ class Maker:
             data["_copy_without_render"] = self.no_render
 
         # Force to use POSIX line endings
-        data["_new_lines"] = "\r\n"
+        data["_new_lines"] = "\n"
 
         # Write the JSON file with nice formatting
         self.path_cookiecutter_json.write_text(
