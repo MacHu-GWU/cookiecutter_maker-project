@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
 from cookiecutter_maker.api import Parameter, Maker
 from cookiecutter_maker.tests.case import run_case
 from cookiecutter_maker.paths import dir_project_root

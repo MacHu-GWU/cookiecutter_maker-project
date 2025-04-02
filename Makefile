@@ -85,7 +85,7 @@ build: ## Build Python library distribution package
 	~/.pyenv/shims/python ./bin/s05_1_build_package.py
 
 
-publish: ## Publish Python library to Public PyPI
+publish: build ## Publish Python library to Public PyPI
 	~/.pyenv/shims/python ./bin/s05_2_publish_package.py
 
 

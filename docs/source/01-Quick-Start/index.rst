@@ -375,6 +375,7 @@ More Examples
 ------------------------------------------------------------------------------
 - Example 1:
     - `seed project <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/my_package-project>`_
+    - `Sample cookiecutter_maker script <https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/tests/examples/test_example1.py>`_
     - `template directory <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/template>`_
     - `cookiecutter.json <https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/examples/example1/template/cookiecutter.json>`_
     - `hooks <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/hooks>`_
