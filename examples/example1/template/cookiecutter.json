@@ -1,0 +1,27 @@
+{
+    "package_name": "my_package",
+    "version": "0.1.1",
+    "author": "Alice",
+    "author_email": "alice@email.com",
+    "maintainer": "Alice",
+    "maintainer_email": "alice@email.com",
+    "license": [
+        "MIT",
+        "AGPL-3.0-or-later",
+        "Proprietary"
+    ],
+    "__prompts__": {
+        "package_name": "Your Python package name, in snake case (e.g. my_package)",
+        "version": "Semantic Version, in {major}.{minor}.{micro} (e.g. 0.1.1)",
+        "author": "Author name for pyproject.toml file",
+        "author_email": "Author email for pyproject.toml file",
+        "maintainer": "Maintainer name for pyproject.toml file",
+        "maintainer_email": "Maintainer email for pyproject.toml file",
+        "license": "Pick an open source license"
+    },
+    "_copy_without_render": [
+        "*.jinja",
+        "*/vendor/**/*.*"
+    ],
+    "_new_lines": "\n"
+}

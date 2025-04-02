@@ -15,6 +15,22 @@ Backlog (TODO)
 **Miscellaneous**
 
 
+1.0.2 (2025-04-02)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Features and Improvements**
+
+**Minor Improvements**
+
+- Add optional property ``prompt`` to ``Parameter``.
+- Add optional property ``custom_placeholder`` to ``Parameter``.
+- Add optional property ``in_cookiecutter_json`` to ``Parameter``.
+
+**Miscellaneous**
+
+- Update unit test for the three new properties of ``Parameter``.
+- Update the line diff in the test.
+
+
 1.0.1 (2025-04-01)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **💥Breaking Changes**

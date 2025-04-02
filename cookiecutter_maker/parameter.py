@@ -36,30 +36,42 @@ class Parameter:
         Required if choice is empty.
     :param choice: Optional list of choices for the parameter. If provided, default must be None.
         See https://cookiecutter.readthedocs.io/en/stable/advanced/choice_variables.html
+    :param prompt: Optional human readable prompt.
+    :param custom_placeholder: Optional custom placeholder string for the parameter,
+        this will override the default ``{{ cookiecutter.name }}`` format.
+    :param in_cookiecutter_json: Whether to include this parameter in the cookiecutter.json file.
+        If False, the parameter will be used for replacements but not added to cookiecutter.json.
+        Defaults to True.
+
     :param include: Optional list of file path patterns where this parameter should be applied.
     :param exclude: Optional list of file path patterns where this parameter should not be applied.
 
     TODO make parameter level include and exclude really work.
     """
-
+    # fmt: off
     selector: list[str] = dataclasses.field()
     name: str = dataclasses.field()
     default: T.Optional[T.Any] = dataclasses.field(default=None)
     choice: list[T.Any] = dataclasses.field(default_factory=list)
+    prompt: T.Optional[T.Union[str, dict[str, T.Any]]] = dataclasses.field(default=None)
+    custom_placeholder: T.Optional[str] = dataclasses.field(default=None)
+    in_cookiecutter_json: bool = dataclasses.field(default=True)
     include: list[str] = dataclasses.field(default_factory=list)
     exclude: list[str] = dataclasses.field(default_factory=list)
+    # fmt: on
 
     def _validate(self):
         """
         Validate parameter configuration.
         """
         validate_selector(self.selector)
-        if self.default is None:
-            if len(self.choice) == 0:
-                raise ValueError("You have to define either a default value or a list of choices.")
-        else:
-            if len(self.choice):
-                raise ValueError("You can't define both a default value and a list of choices.")
+        if self.in_cookiecutter_json:
+            if self.default is None:
+                if len(self.choice) == 0:
+                    raise ValueError("You have to define either a default value or a list of choices.")
+            else:
+                if len(self.choice):
+                    raise ValueError("You can't define both a default value and a list of choices.")
 
     def __post_init__(self):  # pragma: no cover
         self._validate()
@@ -72,7 +84,10 @@ class Parameter:
         The placeholder is created using the parameter name and selector,
         following the cookiecutter template format: ``{{ cookiecutter.param_name }}``
         """
-        return to_placeholder(name=self.name, selector=self.selector)
+        if self.custom_placeholder:
+            return self.custom_placeholder
+        else:
+            return to_placeholder(name=self.name, selector=self.selector)
 
     @cached_property
     def path_matcher(self) -> PathMatcher:

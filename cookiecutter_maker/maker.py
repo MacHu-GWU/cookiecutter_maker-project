@@ -252,10 +252,17 @@ class Maker:
         """
         # Start with an empty dictionary
         data = {}
+        prompts = {}
         # Add each parameter's configuration
         for param in self.parameters:
-            key, value = param.to_cookiecutter_key_value()
-            data[key] = value
+            if param.in_cookiecutter_json:
+                key, value = param.to_cookiecutter_key_value()
+                data[key] = value
+                if param.prompt:
+                    prompts[key] = param.prompt
+
+        if prompts:
+            data["__prompts__"] = prompts
 
         # If no_render patterns are specified, add them to the config
         if self.no_render:

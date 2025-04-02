@@ -17,18 +17,13 @@ def display_diff(
     with path_2.open("r", encoding="utf-8") as f2:
         f2_lines = f2.readlines()
 
-    # Get unified diff
-    diff = difflib.unified_diff(
+    diff = difflib.ndiff(
         f1_lines,
         f2_lines,
-        fromfile="file1.txt",
-        tofile="file2.txt",
-        lineterm="",
     )
-    # Print diff
     for line in diff:
-        print(line)
-
+        # Remove trailing newlines to prevent double spacing
+        print(line.rstrip())
 
 def compare_directory(
     dir_1: Path,
@@ -87,7 +82,7 @@ def run_case(
     # check template dir
     compare_directory(
         dir_1=dir_expected_template,
-        dir_2=maker.dir_template,
+        dir_2=maker.dir_output,
     )
 
     # template -> concrete

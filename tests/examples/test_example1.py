@@ -18,11 +18,13 @@ def test():
                 selector=["my_package"],
                 name="package_name",
                 default="my_package",
+                prompt="Your Python package name, in snake case (e.g. my_package)",
             ),
             Parameter(
                 selector=["my-package"],
                 name="package_name_slug",
-                default="my-package",
+                custom_placeholder="{{ cookiecutter.package_name | slugify }}",
+                in_cookiecutter_json=False,
             ),
             Parameter(
                 selector=[
@@ -31,6 +33,7 @@ def test():
                 ],
                 name="version",
                 default="0.1.1",
+                prompt="Semantic Version, in {major}.{minor}.{micro} (e.g. 0.1.1)",
             ),
             Parameter(
                 selector=[
@@ -40,6 +43,7 @@ def test():
                 ],
                 name="author",
                 default="Alice",
+                prompt="Author name for pyproject.toml file",
             ),
             Parameter(
                 selector=[
@@ -49,6 +53,7 @@ def test():
                 ],
                 name="author_email",
                 default="alice@email.com",
+                prompt="Author email for pyproject.toml file",
             ),
             Parameter(
                 selector=[
@@ -58,6 +63,7 @@ def test():
                 ],
                 name="maintainer",
                 default="Alice",
+                prompt="Maintainer name for pyproject.toml file",
             ),
             Parameter(
                 selector=[
@@ -67,6 +73,7 @@ def test():
                 ],
                 name="maintainer_email",
                 default="alice@email.com",
+                prompt="Maintainer email for pyproject.toml file",
             ),
             Parameter(
                 selector=[
@@ -75,6 +82,7 @@ def test():
                 ],
                 name="license",
                 choice=["MIT", "AGPL-3.0-or-later", "Proprietary"],
+                prompt="Pick an open source license",
             ),
         ],
         include=[
@@ -87,13 +95,11 @@ def test():
             "*.jinja",
             "*/vendor/**/*.*",
         ],
-        dir_hooks=dir_example1.joinpath("hooks"),
+        dir_hooks=dir_example1.joinpath("template", "hooks"),
     )
     run_case(
         maker=maker,
-        dir_expected_template=dir_example1.joinpath(
-            "{{ cookiecutter.package_name }}-project"
-        ),
+        dir_expected_template=dir_example1.joinpath("template"),
         dir_expected_project=dir_example1.joinpath("tmp", "my_package-project"),
     )
 
