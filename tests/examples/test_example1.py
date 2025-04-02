@@ -85,6 +85,7 @@ def test():
         ],
         no_render=[
             "*.jinja",
+            "*/vendor/**/*.*",
         ],
         dir_hooks=dir_example1.joinpath("hooks"),
     )
