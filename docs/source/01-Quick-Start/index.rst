@@ -21,9 +21,6 @@ Create a Python script like the one below to convert the project into a cookiecu
    :language: python
    :linenos:
 
-In enterprise project, can be close source, private project, can be any programming language project, you may develop a nicely designed "seed" project, and use ``cookiecutter_maker`` to generate template project from it, then use ``cookiecutter`` to generate more project like this.
-
-
 .. dropdown:: Console Logs
 
     .. code-block::
