@@ -17,11 +17,9 @@ Let's say we've found a project with a well-organized folder structure that we w
 
 Create a Python script like the one below to convert the project into a cookiecutter template:
 
-.. dropdown:: new_project_like_python_requests.py
-
-    .. literalinclude:: ./new_project_like_python_requests.py
-       :language: python
-       :linenos:
+.. literalinclude:: ./new_project_like_python_requests.py
+   :language: python
+   :linenos:
 
 In enterprise project, can be close source, private project, can be any programming language project, you may develop a nicely designed "seed" project, and use ``cookiecutter_maker`` to generate template project from it, then use ``cookiecutter`` to generate more project like this.
 
@@ -380,7 +378,8 @@ More Examples
 ------------------------------------------------------------------------------
 - Example 1:
     - `seed project <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/my_package-project>`_
-    - `template directory <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/%7B%7B%20cookiecutter.package_name%20%7D%7D-project>`_
+    - `template directory <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/template>`_
+    - `cookiecutter.json <https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/examples/example1/template/cookiecutter.json>`_
     - `hooks <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/hooks>`_
 
 
