@@ -11,7 +11,9 @@ import typing as T
 import dataclasses
 from functools import cached_property
 
-from .str_replace import validate_selector, to_placeholder, replace_with_placeholders
+from .str_replace import validate_selector
+from .str_replace import to_placeholder
+from .str_replace import replace_with_placeholders
 from .path_matcher import PathMatcher
 
 
@@ -78,10 +80,10 @@ class Parameter:
     # fmt: off
     selector: list[str] = dataclasses.field()
     name: str = dataclasses.field()
-    default: T.Optional[T.Any] = dataclasses.field(default=None)
+    default: T.Any | None = dataclasses.field(default=None)
     choice: list[T.Any] = dataclasses.field(default_factory=list)
-    prompt: T.Optional[T.Union[str, dict[str, T.Any]]] = dataclasses.field(default=None)
-    custom_placeholder: T.Optional[str] = dataclasses.field(default=None)
+    prompt: str | dict[str, T.Any] | None = dataclasses.field(default=None)
+    custom_placeholder: str | None = dataclasses.field(default=None)
     in_cookiecutter_json: bool = dataclasses.field(default=True)
     include: list[str] = dataclasses.field(default_factory=list)
     exclude: list[str] = dataclasses.field(default_factory=list)

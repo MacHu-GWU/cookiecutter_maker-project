@@ -12,12 +12,11 @@ All the logic lives in :mod:`cookiecutter_maker.config`, this module only
 exposes it as commands.
 """
 
-import typing as T
-
 import sys
 
 from . import __version__
-from .config import load_maker, write_sample_config
+from .config import load_maker
+from .config import write_sample_config
 
 
 class Command:
@@ -30,15 +29,15 @@ class Command:
 
     def make(
         self,
-        config: T.Optional[str] = None,
-        dir_input: T.Optional[str] = None,
-        dir_output: T.Optional[str] = None,
-        dir_hooks: T.Optional[str] = None,
-        include: T.Optional[T.Union[str, list[str]]] = None,
-        exclude: T.Optional[T.Union[str, list[str]]] = None,
-        no_render: T.Optional[T.Union[str, list[str]]] = None,
-        verbose: T.Optional[bool] = None,
-        overwrite: T.Optional[bool] = None,
+        config: str | None = None,
+        dir_input: str | None = None,
+        dir_output: str | None = None,
+        dir_hooks: str | None = None,
+        include: str | list[str] | None = None,
+        exclude: str | list[str] | None = None,
+        no_render: str | list[str] | None = None,
+        verbose: bool | None = None,
+        overwrite: bool | None = None,
     ):
         """
         Generate the cookiecutter template.
@@ -73,7 +72,7 @@ class Command:
 
     def init(
         self,
-        path: T.Optional[str] = None,
+        path: str | None = None,
         overwrite: bool = False,
     ):
         """

@@ -20,8 +20,9 @@
         "license": "Pick an open source license"
     },
     "_copy_without_render": [
-        "*.jinja",
-        "*/vendor/**/*.*"
+        "{{ cookiecutter.package_name }}/template/index.html.jinja",
+        "{{ cookiecutter.package_name }}/vendor/__init__.py",
+        "{{ cookiecutter.package_name }}/vendor/another_package.py"
     ],
     "_new_lines": "\n"
 }

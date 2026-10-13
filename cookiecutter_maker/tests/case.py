@@ -35,8 +35,8 @@ def compare_directory(
     :param dir_1: The first directory.
     :param dir_2: The second directory.
     """
-    path_list_1 = list(dir_1.glob("**/*.*"))
-    path_list_2 = list(dir_2.glob("**/*.*"))
+    path_list_1 = [p for p in dir_1.rglob("*") if p.is_file()]
+    path_list_2 = [p for p in dir_2.rglob("*") if p.is_file()]
     relpath_list_1 = [str(p.relative_to(dir_1)) for p in path_list_1]
     relpath_list_2 = [str(p.relative_to(dir_2)) for p in path_list_2]
     relpath_list_1.sort()

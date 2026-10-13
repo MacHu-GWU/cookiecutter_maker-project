@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from cookiecutter_maker.str_replace import (
-    validate_selector,
-    to_placeholder,
-    replace_with_placeholders,
-    replace_double_curly_brackets,
-)
+
+from cookiecutter_maker.str_replace import validate_selector
+from cookiecutter_maker.str_replace import to_placeholder
+from cookiecutter_maker.str_replace import replace_with_placeholders
+from cookiecutter_maker.str_replace import replace_double_curly_brackets
 
 
 def _test_validate_selector(selector, valid):
@@ -125,9 +124,34 @@ def test_replace_with_placeholders():
             ],
             "pkg, pkg_path, pkg_module",
         ),
+        # The longest match wins, regardless of the order
+        (
+            "john, john@email.com",
+            [
+                ("john", "name"),
+                ("john@email.com", "email"),
+            ],
+            "name, email",
+        ),
+        # A replacement is never replaced again
+        (
+            "a b",
+            [
+                ("a", "b"),
+                ("b", "a"),
+            ],
+            "b a",
+        ),
+        # Empty search strings are ignored
+        ("abc", [("", "x")], "abc"),
+        ("abc", [], "abc"),
     ]
     for text, replacements, expected in cases:
         _test_replace_with_placeholders(text, replacements, expected)
+
+    # Short search strings used to randomly collide with the uuid placeholders
+    for _ in range(100):
+        assert replace_with_placeholders("alpha beta", [("alpha", "A"), ("ab", "X")]) == "A beta"
 
 
 def test_replace_double_curly_brackets():
@@ -139,6 +163,11 @@ def test_replace_double_curly_brackets():
         text
         == 'f"{% raw %}{{{% endraw %} "{name}" {% raw %}}}{% endraw %}".format(name="Alice")'
     )
+
+    # Jinja2 block and comment syntax
+    assert replace_double_curly_brackets("{% if x %}") == "{% raw %}{%{% endraw %} if x %}"
+    assert replace_double_curly_brackets("${#arr[@]}") == "${% raw %}{#{% endraw %}arr[@]}"
+    assert replace_double_curly_brackets("{{{") == "{% raw %}{{{% endraw %}{"
 
 
 if __name__ == "__main__":

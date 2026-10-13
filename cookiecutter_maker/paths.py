@@ -24,7 +24,6 @@ class PathEnum:
 
     # Source Code
     dir_package = _dir_here
-    path_version_py = dir_package / "_version.py"
     path_pyproject_toml = dir_project_root / "pyproject.toml"
     path_requirements_txt = dir_project_root / "requirements.txt"
     path_authors = dir_project_root / "AUTHORS.rst"

@@ -15,8 +15,13 @@ Backlog (TODO)
 **Miscellaneous**
 
 
-1.2.0 (TODO)
+1.1.0 (TODO)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Breaking Changes**
+
+- Drop support for Python 3.9 and 3.10. Now supports Python 3.11 ~ 3.14.
+- ``cookiecutter_maker.__version__`` is now read from the installed package metadata; the ``_version`` module and its ``__short_description__`` / ``__license__`` / ``__author__`` / ``__author_email__`` / ``__maintainer__`` / ``__maintainer_email__`` attributes are removed.
+
 **Features and Improvements**
 
 - Add the ``cookiecutter-maker`` command line interface, powered by `Python Fire <https://github.com/google/python-fire>`_. It is an optional dependency, install it with ``pip install "cookiecutter-maker[cli]"`` or run it with ``uvx --from "cookiecutter-maker[cli]" cookiecutter-maker``.
@@ -25,19 +30,25 @@ Backlog (TODO)
     - ``cookiecutter-maker version``: print the version.
 - Add the ``cookiecutter_maker.config`` module to load a ``Maker`` from a JSON config file and merge it with overrides. Relative paths in the config file are resolved against the config file's directory.
 - Add ``Maker.from_dict`` and ``Parameter.from_dict``, unknown or missing fields raise a clear ``ValueError``.
-- Add ``Maker.overwrite``, delete the existing ``dir_output`` before generating the template. It refuses to delete ``dir_input`` or any of its parents.
+- Add ``Maker.overwrite``, delete the existing ``dir_output`` before generating the template. For safety, it only deletes an empty directory or a previously generated template (has ``cookiecutter.json``), and never deletes ``dir_input`` or its parents.
 
+**Minor Improvements**
 
-1.1.0 (TODO)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-**Breaking Changes**
+- ``Maker`` now raises ``ValueError`` for duplicate parameter names or duplicate ``selector[0]``, which used to silently override each other.
 
-- Drop support for Python 3.9 and 3.10. Now supports Python 3.11 ~ 3.14.
+**Bugfixes**
+
+- Fix ``include``: any non-empty ``include`` used to skip the root directory and crash. Now ``include`` patterns apply to files only, directories are only filtered by ``exclude``, and directories without included files are not created.
+- Fix Jinja2 block and comment syntax in the seed project (e.g. ``{% if x %}`` in HTML, ``${#array[@]}`` in shell scripts) breaking the generated template. ``{%`` and ``{#`` are now escaped like ``{{``.
+- Fix parameter replacement randomly corrupting text when a selector is short (it could match inside the internal UUID placeholders), and depending on the order of parameters when selectors overlap. Now all selectors are replaced in a single pass and the longest match wins.
+- Fix infinite recursion when ``dir_output`` is inside ``dir_input``, the output directory is now skipped.
+- Fix ``no_render`` files being rendered by cookiecutter anyway: cookiecutter matches ``_copy_without_render`` with ``fnmatch`` against the template path, so most git-style patterns (e.g. ``vendor/``, ``/*.html``, ``*/vendor/**/*.*``) never matched. ``cookiecutter.json`` now lists the exact template path of each ``no_render`` file instead of the patterns.
+- Use ``/`` as the path separator for ``include`` / ``exclude`` / ``no_render`` pattern matching on Windows.
+- Fix the misspelled ``classifier`` key in ``pyproject.toml``, so the PyPI classifiers (license, supported Python versions) are actually published.
 
 **Miscellaneous**
 
-- ``cookiecutter_maker.__version__`` is now read from the installed package metadata; the ``_version`` module and its ``__author__`` / ``__license__`` style attributes are removed.
-- Migrate the development workflow from poetry + ``bin/`` scripts to mise + uv + Claude Code.
+- Migrate the development workflow from poetry + ``bin/`` scripts to mise + uv + Claude Code, and the build backend from poetry-core to setuptools.
 
 
 1.0.2 (2025-04-02)

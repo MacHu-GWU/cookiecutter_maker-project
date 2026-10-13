@@ -10,6 +10,7 @@ The main class is :class:`Maker`, which orchestrates the entire template convers
 
 import typing as T
 
+import glob
 import json
 import shutil
 import dataclasses
@@ -17,7 +18,9 @@ from pathlib import Path
 from functools import cached_property
 
 from .str_replace import replace_double_curly_brackets
-from .parameter import Parameter, replace_with_parameter, check_dataclass_kwargs
+from .parameter import Parameter
+from .parameter import replace_with_parameter
+from .parameter import check_dataclass_kwargs
 from .path_matcher import PathMatcher
 
 
@@ -31,15 +34,23 @@ class Maker:
     :param parameter: a list of :class:`~.cookiecutter_maker.parameter.Parameter`
         defining substitution rules.
     :param include: List of file path patterns to include from the input dir.
-        If empty, we include all files and directories.
+        If empty, we include all files and directories. If not empty, only
+        the matched files are included, and only the directories containing
+        included files are created.
     :param exclude: List of file path patterns to exclude from the input dir.
         If empty, we exclude nothing.
     :param no_render: List of file path patterns to copy without rendering.
+        The matched files are listed one by one in ``_copy_without_render``
+        of ``cookiecutter.json``, because cookiecutter matches this setting
+        with ``fnmatch`` against the template path, not with the git-style
+        patterns against the seed project path.
     :param dir_hooks: Optional directory containing cookiecutter hooks.
     :param verbose: Whether to print verbose output during processing
     :param overwrite: If True, delete the existing ``dir_output`` before
-        generating the template. If False, raise an error when ``dir_output``
-        already exists.
+        generating the template. For safety, it only deletes an empty directory
+        or a previously generated template (has ``cookiecutter.json``), and never
+        deletes ``dir_input`` or its parents. If False, raise an error when
+        ``dir_output`` already exists.
     """
 
     dir_input: Path = dataclasses.field()
@@ -48,12 +59,31 @@ class Maker:
     include: list[str] = dataclasses.field(default_factory=list)
     exclude: list[str] = dataclasses.field(default_factory=list)
     no_render: list[str] = dataclasses.field(default_factory=list)
-    dir_hooks: T.Optional[Path] = dataclasses.field(default=None)
+    dir_hooks: Path | None = dataclasses.field(default=None)
     verbose: bool = dataclasses.field(default=True)
     overwrite: bool = dataclasses.field(default=False)
 
     def __post_init__(self):
-        pass
+        self._validate()
+        # template paths (relative to dir_template) of the no_render files,
+        # filled by make_template, see write_cookiecutter_json
+        self._copy_without_render: list[str] = []
+
+    def _validate(self):
+        """
+        Validate that parameters don't conflict with each other.
+        """
+        names = [param.name for param in self.parameters if param.in_cookiecutter_json]
+        duplicates = sorted({name for name in names if names.count(name) > 1})
+        if duplicates:
+            raise ValueError(f"Duplicate parameter name(s): {duplicates}")
+        selectors = [param.selector[0] for param in self.parameters]
+        duplicates = sorted({sel for sel in selectors if selectors.count(sel) > 1})
+        if duplicates:
+            raise ValueError(
+                f"Duplicate parameter selector(s): {duplicates}, "
+                f"each string can only be replaced by one parameter."
+            )
 
     @classmethod
     def from_dict(cls, data: dict[str, T.Any]) -> "Maker":
@@ -112,7 +142,7 @@ class Maker:
         """
         return self.dir_output.joinpath("cookiecutter.json")
 
-    def _make_template_file(self, p_before: Path) -> T.Optional[Path]:
+    def _make_template_file(self, p_before: Path) -> Path | None:
         """
         Convert a file to a template in the output directory.
 
@@ -121,28 +151,34 @@ class Maker:
         :returns: the file path in the output directory.
             If the file is ignored, then return None.
         """
-        # Get the relative path from the input directory
-        relpath = p_before.relative_to(self.dir_input)
+        # Get the relative path from the input directory,
+        # always use "/" as separator for pattern matching
+        relpath = p_before.relative_to(self.dir_input).as_posix()
 
         # Check if this file should be included based on include/exclude rules
-        if self.path_matcher.is_match(str(relpath)) is False:
+        if self.path_matcher.is_match(relpath) is False:
             return None
 
         # Apply parameter substitutions to the file path
         new_relpath = replace_with_parameter(
-            text=str(relpath),
+            text=relpath,
             param_list=self.parameters,
         )
         p_after = self.dir_template.joinpath(new_relpath)
 
         # Print processing information if verbose mode is enabled
         if self.verbose:
-            print(f"from: {p_before.relative_to(self.dir_input)}")
+            print(f"from: {relpath}")
             print(f"  to: {p_after.relative_to(self.dir_output)}")
 
+        # The parent directory is not created yet when include is set
+        p_after.parent.mkdir(parents=True, exist_ok=True)
+
         # For files that should be copied without rendering, just copy as-is
-        if self.path_matcher.is_render(str(relpath)) is False:
+        if self.path_matcher.is_render(relpath) is False:
             p_after.write_bytes(p_before.read_bytes())
+            template_relpath = p_after.relative_to(self.dir_template).as_posix()
+            self._copy_without_render.append(template_relpath)
             return p_after
 
         # Read the file content as bytes
@@ -169,7 +205,7 @@ class Maker:
         p_after.write_text(text_content, encoding="utf-8")
         return p_after
 
-    def _make_template_dir(self, p_before: Path) -> T.Optional[Path]:
+    def _make_template_dir(self, p_before: Path) -> Path | None:
         """
         Convert a directory to a template in the output directory.
 
@@ -178,27 +214,34 @@ class Maker:
         :returns: the directory path in the output directory.
             If the directory is ignored, then return None.
         """
-        # Get the relative path from the input directory
-        relpath = p_before.relative_to(self.dir_input)
+        # Get the relative path from the input directory,
+        # always use "/" as separator for pattern matching
+        relpath = p_before.relative_to(self.dir_input).as_posix()
+        is_root = relpath == "."
 
-        # Check if this directory should be included based on include/exclude rules
-        if self.path_matcher.is_match(str(relpath)) is False:
+        # Directories are only filtered by exclude rules, include rules are
+        # applied to files, otherwise ``include=["*.py"]`` would skip the
+        # directories that contain the python files. The root is always processed.
+        if is_root is False and self.path_matcher.is_excluded(relpath):
             return None
 
         # Apply parameter substitutions to the directory path
         new_relpath = replace_with_parameter(
-            text=str(relpath),
+            text=relpath,
             param_list=self.parameters,
         )
         p_after = self.dir_template.joinpath(new_relpath)
 
         # Print processing information if verbose mode is enabled
         if self.verbose:
-            print(f"from: {p_before.relative_to(self.dir_input)}")
+            print(f"from: {relpath}")
             print(f"  to: {p_after.relative_to(self.dir_output)}")
 
-        # Create the directory (and parent directories if needed)
-        p_after.mkdir(parents=True, exist_ok=True)
+        # Create the directory (and parent directories if needed).
+        # When include is set, directories are created by the included files,
+        # so we don't end up with empty directories.
+        if is_root or len(self.include) == 0:
+            p_after.mkdir(parents=True, exist_ok=True)
         return p_after
 
     def _make_template(
@@ -221,8 +264,13 @@ class Maker:
             return
 
         # Process each item in the directory
+        dir_output = self.dir_output.resolve()
         for p in dir_src.iterdir():
             if p.is_dir():
+                # Skip the output directory if it is inside the input directory,
+                # otherwise we keep copying the output into itself
+                if p.resolve() == dir_output:
+                    continue
                 # Recursively process subdirectories
                 self._make_template(p)
             elif p.is_file():
@@ -250,6 +298,10 @@ class Maker:
                     f"Output directory {self.dir_output!r} already exists!! "
                     f"Use overwrite=True to delete it before generating the template."
                 )
+            if self.dir_output.is_dir() is False:
+                raise FileExistsError(
+                    f"Output path {self.dir_output!r} exists and is not a directory!!"
+                )
             # Never delete the seed project itself
             dir_input = self.dir_input.resolve()
             dir_output = self.dir_output.resolve()
@@ -257,6 +309,15 @@ class Maker:
                 raise ValueError(
                     f"Output directory {self.dir_output!r} is the input directory "
                     f"or one of its parents, refuse to overwrite it!!"
+                )
+            # Only delete an empty directory or a previously generated template,
+            # in case dir_output is mistakenly set to something like "." or "~"
+            is_empty = next(self.dir_output.iterdir(), None) is None
+            if (is_empty or self.path_cookiecutter_json.exists()) is False:
+                raise ValueError(
+                    f"Output directory {self.dir_output!r} is not empty and doesn't "
+                    f"look like a generated template (no cookiecutter.json), "
+                    f"refuse to overwrite it!!"
                 )
 
         # If hooks directory is specified, check if it exists
@@ -299,9 +360,11 @@ class Maker:
         if prompts:
             data["__prompts__"] = prompts
 
-        # If no_render patterns are specified, add them to the config
-        if self.no_render:
-            data["_copy_without_render"] = self.no_render
+        # List the no_render files by their exact template path, escaped for fnmatch
+        if self._copy_without_render:
+            data["_copy_without_render"] = [
+                glob.escape(path) for path in sorted(self._copy_without_render)
+            ]
 
         # Force to use POSIX line endings
         data["_new_lines"] = "\n"
@@ -340,6 +403,7 @@ class Maker:
         if self.verbose:
             print("---------- make template ----------")
         # Process the input directory recursively
+        self._copy_without_render = []
         self._make_template(dir_src=self.dir_input)
         # Generate the cookiecutter.json configuration file
         self.write_cookiecutter_json()

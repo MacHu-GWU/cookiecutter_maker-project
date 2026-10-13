@@ -4,8 +4,8 @@
 A utility for file path filtering using Git-style pattern matching with configurable include and exclude rules.
 """
 
-import typing as T
 import dataclasses
+
 import pathspec
 
 
@@ -123,16 +123,16 @@ class PathMatcher:
     gitignore patterns.
     """
 
-    include_spec: T.Optional[pathspec.PathSpec] = dataclasses.field()
-    exclude_spec: T.Optional[pathspec.PathSpec] = dataclasses.field()
-    no_render_spec: T.Optional[pathspec.PathSpec] = dataclasses.field()
+    include_spec: pathspec.PathSpec | None = dataclasses.field()
+    exclude_spec: pathspec.PathSpec | None = dataclasses.field()
+    no_render_spec: pathspec.PathSpec | None = dataclasses.field()
 
     @classmethod
     def new(
         cls,
         include: list[str],
         exclude: list[str],
-        no_render: list[str] = None,
+        no_render: list[str] | None = None,
     ) -> "PathMatcher":
         """
         Create a new :class:`PathMatcher` instance with the given include and exclude patterns.
@@ -193,10 +193,15 @@ class PathMatcher:
                 return False
 
         # Check exclude patterns (if any)
+        return self.is_excluded(path) is False
+
+    def is_excluded(self, path: str) -> bool:
+        """
+        Determines if a path matches any exclude pattern.
+        """
         if self.exclude_spec is None:
-            return True
-        else:
-            return self.exclude_spec.match_file(path) is False
+            return False
+        return self.exclude_spec.match_file(path)
 
     def is_render(self, path: str) -> bool:  # pragma: no cover
         """

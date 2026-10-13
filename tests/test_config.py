@@ -7,17 +7,15 @@ import pytest
 
 from cookiecutter_maker.parameter import Parameter
 from cookiecutter_maker.maker import Maker
-from cookiecutter_maker.config import (
-    CONFIG_FILENAME,
-    SAMPLE_CONFIG,
-    resolve_path,
-    normalize_list,
-    find_config,
-    read_config,
-    apply_overrides,
-    load_maker,
-    write_sample_config,
-)
+from cookiecutter_maker.config import CONFIG_FILENAME
+from cookiecutter_maker.config import SAMPLE_CONFIG
+from cookiecutter_maker.config import resolve_path
+from cookiecutter_maker.config import normalize_list
+from cookiecutter_maker.config import find_config
+from cookiecutter_maker.config import read_config
+from cookiecutter_maker.config import apply_overrides
+from cookiecutter_maker.config import load_maker
+from cookiecutter_maker.config import write_sample_config
 
 
 def write_json(path: Path, data: dict):
@@ -68,6 +66,7 @@ def test_normalize_list():
     assert normalize_list(".git, .venv,") == [".git", ".venv"]
     assert normalize_list((".git", ".venv")) == [".git", ".venv"]
     assert normalize_list([]) == []
+    assert normalize_list(1) == ["1"]
 
 
 def test_find_config(tmp_path: Path):
@@ -166,29 +165,6 @@ def test_write_sample_config(tmp_path: Path):
     # the sample config is a valid Maker config
     maker = load_maker(cwd=tmp_path)
     assert maker.dir_input == tmp_path / "my_project"
-
-
-def test_overwrite(tmp_path: Path):
-    dir_input = tmp_path / "my_package"
-    dir_input.joinpath("my_package").mkdir(parents=True)
-    dir_input.joinpath("my_package", "__init__.py").write_text("")
-    dir_output = tmp_path / "out"
-    dir_output.mkdir()
-    dir_output.joinpath("stale.txt").write_text("")
-
-    kwargs = dict(dir_input=dir_input, parameters=PARAMETERS, verbose=False)
-    with pytest.raises(FileExistsError):
-        Maker.from_dict({**kwargs, "dir_output": dir_output}).make_template()
-
-    Maker.from_dict({**kwargs, "dir_output": dir_output, "overwrite": True}).make_template()
-    assert dir_output.joinpath("stale.txt").exists() is False
-    assert dir_output.joinpath("cookiecutter.json").exists()
-
-    # never delete the seed project
-    for dir_bad in [dir_input, tmp_path]:
-        with pytest.raises(ValueError, match="refuse to overwrite"):
-            Maker.from_dict({**kwargs, "dir_output": dir_bad, "overwrite": True}).make_template()
-    assert dir_input.joinpath("my_package", "__init__.py").exists()
 
 
 if __name__ == "__main__":

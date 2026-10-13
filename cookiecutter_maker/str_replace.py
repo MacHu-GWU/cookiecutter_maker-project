@@ -4,7 +4,7 @@
 String replacement utilities.
 """
 
-import uuid
+import re
 
 
 def validate_selector(selector: list[str]):
@@ -67,64 +67,64 @@ def replace_with_placeholders(
     replacements: list[tuple[str, str]],
 ):
     """
-    Replace multiple strings in text using temporary placeholders to avoid substring conflicts.
+    Replace multiple strings in text in a single pass, so that a replacement
+    is never replaced again by a later one.
+
+    When search strings overlap, the longest one wins, regardless of the order
+    in ``replacements``. For example, ``alice@email.com`` is replaced as a whole
+    even if ``alice`` comes first.
 
     Example:
 
     >>> replace_with_placeholders(
     ...     text='author = "alice", author_email = "alice@email.com"',
     ...     replacements=[
-    ...         ("alice@email.com", "{{ cookiecutter.author_email }}"),
     ...         ("alice", "{{ cookiecutter.author }}"),
+    ...         ("alice@email.com", "{{ cookiecutter.author_email }}"),
     ...     ]
     ... )
     'author = "{{ cookiecutter.author }}", author_email = "{{ cookiecutter.author_email }}"'
 
     :param text: The input text to perform replacements on
-    :param replacements: List of tuples (search_string, replace_string)
+    :param replacements: List of tuples (search_string, replace_string).
+        Empty search strings are ignored. If a search string appears more than
+        once, the last one wins.
 
     :returns: Text with all replacements applied
     """
-    # Create a mapping of search strings to unique placeholders and final replacements
-    placeholder_map = {}
-
-    # Generate unique placeholders for each search string
-    for search_string, replace_string in replacements:
-        # Create a unique placeholder using UUID (guaranteed to not be a substring of other content)
-        placeholder = f"__PLACEHOLDER_{uuid.uuid4()}__"
-        placeholder_map[search_string] = (placeholder, replace_string)
-
-    # First pass: replace all search strings with their placeholders
-    result = text
-    for search_string, (placeholder, _) in placeholder_map.items():
-        result = result.replace(search_string, placeholder)
-
-    # Second pass: replace all placeholders with their final values
-    for _, (placeholder, replace_string) in placeholder_map.items():
-        result = result.replace(placeholder, replace_string)
-
-    return result
+    mapping = {
+        search_string: replace_string
+        for search_string, replace_string in replacements
+        if search_string
+    }
+    if not mapping:
+        return text
+    # Python regex alternation picks the first alternative that matches,
+    # so sort by length descending to prefer the longest match.
+    pattern = re.compile(
+        "|".join(re.escape(k) for k in sorted(mapping, key=len, reverse=True))
+    )
+    return pattern.sub(lambda match: mapping[match.group(0)], text)
 
 
-double_curly_brackets_mapper = {
-    "{{": "{% raw %}{{{% endraw %}",
-    "}}": "{% raw %}}}{% endraw %}",
-}
+# Jinja2 delimiters that need to be escaped in the seed project.
+# Only the opening delimiters matter for Jinja2, ``}}`` is escaped as well
+# to keep the generated template symmetric and readable.
+_jinja_delimiter_pattern = re.compile(r"\{\{|\}\}|\{%|\{#")
+
 
 def replace_double_curly_brackets(text: str) -> str:
     """
-    Replace double curly brackets with raw Jinja2 template syntax.
+    Escape Jinja2 syntax with raw blocks.
 
     When converting a seed project to a cookiecutter template, Jinja2 syntax
-    in the original files needs special handling. This function replaces the
-    standard Jinja2 delimiters ('{{' and '}}') with raw expressions that will be
-    preserved as literal curly brackets in the generated template, rather than
-    being interpreted as Jinja2/cookiecutter variables.
-
-    This ensures that original Jinja2 syntax in the seed project is preserved
-    as literal text in the generated cookiecutter template, preventing conflicts
-    with cookiecutter's own variable substitution which also uses curly brackets.
+    in the original files needs special handling. This function wraps the
+    Jinja2 delimiters ``{{``, ``}}``, ``{%`` and ``{#`` with
+    ``{% raw %}...{% endraw %}``, so they are preserved as literal text in the
+    generated project, rather than being interpreted by cookiecutter. For example,
+    ``{% if x %}`` in a seed HTML file, or ``${#array[@]}`` in a seed shell script.
     """
-    for before, after in double_curly_brackets_mapper.items():
-        text = text.replace(before, after)
-    return text
+    return _jinja_delimiter_pattern.sub(
+        lambda match: "{% raw %}" + match.group(0) + "{% endraw %}",
+        text,
+    )

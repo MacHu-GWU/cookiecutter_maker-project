@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from cookiecutter_maker.parameter import (
-    Parameter,
-    replace_with_parameter,
-)
+import pytest
+
+from cookiecutter_maker.parameter import Parameter
+from cookiecutter_maker.parameter import replace_with_parameter
 
 
 class TestParameter:
@@ -24,6 +24,17 @@ class TestParameter:
             "license",
             ["MIT", "AGPL-3.0-or-later", "Proprietary"],
         )
+
+    def test_validate(self):
+        with pytest.raises(ValueError, match="either a default value or a list of choices"):
+            Parameter(selector=["a"], name="a")
+        with pytest.raises(ValueError, match="both a default value and a list of choices"):
+            Parameter(selector=["a"], name="a", default="a", choice=["a", "b"])
+        with pytest.raises(ValueError, match="NOT a sub string"):
+            Parameter(selector=["abc", "x"], name="a", default="a")
+        # no default needed if not in cookiecutter.json
+        Parameter(selector=["a"], name="a", in_cookiecutter_json=False)
+
 
 
 if __name__ == "__main__":

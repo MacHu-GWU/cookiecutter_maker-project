@@ -70,7 +70,7 @@ SAMPLE_CONFIG = {
 }
 
 
-def resolve_path(value: T.Union[str, Path], base: Path) -> Path:
+def resolve_path(value: str | Path, base: Path) -> Path:
     """
     Expand ``~`` and resolve a relative path against ``base``.
     """
@@ -80,21 +80,23 @@ def resolve_path(value: T.Union[str, Path], base: Path) -> Path:
     return Path(os.path.normpath(path))
 
 
-def normalize_list(value: T.Union[str, list, tuple]) -> list[str]:
+def normalize_list(value: str | list | tuple) -> list[str]:
     """
     Normalize a list-like command line value to a list of strings.
 
     ``".git,.venv"`` and ``[".git", ".venv"]`` both become ``[".git", ".venv"]``.
+
+    Fire may also parse a value like ``--exclude=1`` into a non-string scalar.
     """
-    if isinstance(value, str):
-        return [item.strip() for item in value.split(",") if item.strip()]
-    return [str(item) for item in value]
+    if isinstance(value, (list, tuple)):
+        return [str(item) for item in value]
+    return [item.strip() for item in str(value).split(",") if item.strip()]
 
 
 def find_config(
-    config: T.Optional[T.Union[str, Path]] = None,
-    cwd: T.Optional[Path] = None,
-) -> T.Optional[Path]:
+    config: str | Path | None = None,
+    cwd: Path | None = None,
+) -> Path | None:
     """
     Locate the config file.
 
@@ -134,7 +136,7 @@ def read_config(path: Path) -> dict[str, T.Any]:
 def apply_overrides(
     data: dict[str, T.Any],
     overrides: dict[str, T.Any],
-    cwd: T.Optional[Path] = None,
+    cwd: Path | None = None,
 ) -> dict[str, T.Any]:
     """
     Return a new dict with non-``None`` command line values overriding ``data``.
@@ -155,8 +157,8 @@ def apply_overrides(
 
 
 def load_maker(
-    config: T.Optional[T.Union[str, Path]] = None,
-    cwd: T.Optional[Path] = None,
+    config: str | Path | None = None,
+    cwd: Path | None = None,
     **overrides,
 ) -> Maker:
     """
@@ -181,9 +183,9 @@ def load_maker(
 
 
 def write_sample_config(
-    path: T.Optional[T.Union[str, Path]] = None,
+    path: str | Path | None = None,
     overwrite: bool = False,
-    cwd: T.Optional[Path] = None,
+    cwd: Path | None = None,
 ) -> Path:
     """
     Write a sample ``cookiecutter-maker.json`` config file.

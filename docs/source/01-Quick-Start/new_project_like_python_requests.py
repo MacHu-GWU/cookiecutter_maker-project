@@ -12,7 +12,8 @@ new projects with the same structure but customized parameters.
 
 import shutil
 from pathlib import Path
-from cookiecutter_maker.api import Parameter, Maker
+from cookiecutter_maker.api import Parameter
+from cookiecutter_maker.api import Maker
 
 # Get the current directory and create a temporary directory for output
 dir_here: Path = Path(__file__).absolute().parent

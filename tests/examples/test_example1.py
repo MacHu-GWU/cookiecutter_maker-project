@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from cookiecutter_maker.api import Parameter, Maker
+from cookiecutter_maker.api import Parameter
+from cookiecutter_maker.api import Maker
 from cookiecutter_maker.tests.case import run_case
 from cookiecutter_maker.paths import path_enum
 
