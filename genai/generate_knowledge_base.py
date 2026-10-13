@@ -11,7 +11,7 @@ Generate the AI knowledge base for the project.
 import shutil
 from pathlib import Path
 
-from cookiecutter_maker.paths import dir_project_root, PACKAGE_NAME
+from cookiecutter_maker.paths import path_enum, PACKAGE_NAME
 from docpack.api import GitHubPipeline
 
 dir_here = Path(__file__).absolute().parent
@@ -24,11 +24,11 @@ gh_pipeline = GitHubPipeline(
     account="MacHu-GWU",
     repo=f"{PACKAGE_NAME}-project",
     branch="main",
-    dir_repo=dir_project_root,
+    dir_repo=path_enum.dir_project_root,
     include=[
         "README.rst",
-        "Makefile",
-        "poetry.toml",
+        "mise.toml",
+        "CLAUDE.md",
         "pyproject.toml",
         "release-history.rst",
         f"{PACKAGE_NAME}/**/*.py",

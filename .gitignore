@@ -1,10 +1,10 @@
 # User Settings
-cookiecutter_maker_venv/
 cookiecutter_maker.egg-info/
-cookiecutter_maker-*/
-tests/output/
+docs/source/**/index.md
+.claude/claude-code-message*
 tmp/
-bin/pywf_open_source/
+tests/output/
+genai/tmp/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -15,6 +15,18 @@ Backlog (TODO)
 **Miscellaneous**
 
 
+1.1.0 (TODO)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Breaking Changes**
+
+- Drop support for Python 3.9 and 3.10. Now supports Python 3.11 ~ 3.14.
+
+**Miscellaneous**
+
+- ``cookiecutter_maker.__version__`` is now read from the installed package metadata; the ``_version`` module and its ``__author__`` / ``__license__`` style attributes are removed.
+- Migrate the development workflow from poetry + ``bin/`` scripts to mise + uv + Claude Code.
+
+
 1.0.2 (2025-04-02)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Features and Improvements**

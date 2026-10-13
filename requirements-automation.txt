@@ -1,1 +1,0 @@
-pathspec==0.12.1 ; python_version >= "3.9" and python_version < "4.0"

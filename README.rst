@@ -18,10 +18,10 @@
 .. image:: https://img.shields.io/pypi/pyversions/cookiecutter-maker.svg
     :target: https://pypi.python.org/pypi/cookiecutter-maker
 
-.. image:: https://img.shields.io/badge/Release_History!--None.svg?style=social
+.. image:: https://img.shields.io/badge/✍️_Release_History!--None.svg?style=social&logo=github
     :target: https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/release-history.rst
 
-.. image:: https://img.shields.io/badge/STAR_Me_on_GitHub!--None.svg?style=social
+.. image:: https://img.shields.io/badge/⭐_Star_me_on_GitHub!--None.svg?style=social&logo=github
     :target: https://github.com/MacHu-GWU/cookiecutter_maker-project
 
 ------
@@ -83,10 +83,10 @@ Install
 
 .. code-block:: console
 
-    $ pip install cookiecutter_maker
+    $ pip install cookiecutter-maker
 
 To upgrade to latest version:
 
 .. code-block:: console
 
-    $ pip install --upgrade cookiecutter_maker
+    $ pip install --upgrade cookiecutter-maker

@@ -106,3 +106,8 @@ depends = ["inst"]
 description = "🔧 Update GitHub repository description and homepage using PyGithub"
 run = ".venv/bin/python .mise/tasks/update-github-metadata.py"
 depends = ["inst"]
+
+# AI Assistant
+[tasks.list-tasks]
+description = "📝 Generate .claude/mise-tasks.md listing all mise tasks (for AI assistants)"
+run = ".venv/bin/python .mise/tasks/list-tasks-markdown.py"

@@ -2,9 +2,9 @@
 
 from cookiecutter_maker.api import Parameter, Maker
 from cookiecutter_maker.tests.case import run_case
-from cookiecutter_maker.paths import dir_project_root
+from cookiecutter_maker.paths import path_enum
 
-dir_example1 = dir_project_root.joinpath("examples", "example1")
+dir_example1 = path_enum.dir_project_root.joinpath("examples", "example1")
 
 
 def test():

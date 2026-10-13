@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# cookiecutter_pyproject_demo documentation build configuration file, created by
+# cookiecutter_maker documentation build configuration file, created by
 # sphinx-quickstart on Mon Jul 1 00:00:00 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -20,14 +20,23 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
-from __future__ import unicode_literals
 import os
 from datetime import datetime
-import cookiecutter_maker as package
+from importlib.metadata import version as get_version, metadata
 
-package_name = package.__name__
-package_author = package.__author__
-package_version = package.__version__
+# Get package metadata from installed package (via pyproject.toml)
+package_name = "cookiecutter_maker"
+_meta = metadata(package_name)
+
+# Extract version
+package_version = get_version(package_name)
+
+# Extract author from "Author-email: Name <email@example.com>" format
+_author_email_raw = _meta.get("Author-email", "")
+if _author_email_raw and "<" in _author_email_raw:
+    package_author = _author_email_raw.split("<")[0].strip()
+else:
+    package_author = _meta.get("Author", "Unknown")
 
 # -- General configuration ------------------------------------------------
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -60,9 +69,9 @@ templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-#
-# source_suffix = ['.rst', '.md']
-source_suffix = ".rst"
+source_suffix = {
+    ".rst": "restructuredtext",
+}
 
 # The master toctree document.
 master_doc = "index"
@@ -220,7 +229,7 @@ rst_prolog = "\n" + custom_style_file_content + "\n"
 
 # Add data for Jinja2
 try:
-    from cookiecutter_pywf_open_source_demo.docs import doc_data
+    from cookiecutter_maker.docs import doc_data
 except:
     doc_data = dict()
 
@@ -231,16 +240,18 @@ jinja_contexts = {
 }
 
 # Api Reference Doc
-import docfly
+from pathlib import Path
+import docfly.api as docfly
 
-docfly.ApiReferenceDoc(
-    conf_file=__file__,
+docfly.ApiDocGenerator(
+    dir_output=Path(__file__).absolute().parent.joinpath("api"),
     package_name=package_name,
-    ignored_package=[
-        "%s.docs" % package_name,
-        "%s.tests" % package_name,
-        "%s.vendor" % package_name,
-        "%s._version" % package_name,
-        "%s.paths" % package_name,
+    ignore_patterns=[
+        # Package
+        f"{package_name}.docs",
+        f"{package_name}.tests",
+        f"{package_name}.vendor",
+        # Module
+        f"{package_name}.paths",
     ],
 ).fly()
