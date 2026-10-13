@@ -137,6 +137,51 @@ def test_no_render(tmp_path: Path, no_render: list[str]):
         assert dir_generated.joinpath("my_pkg", relpath).read_text() == content
 
 
+def test_parameter_include_exclude(tmp_path: Path):
+    dir_input = tmp_path / "my_pkg"
+    write_files(
+        dir_input,
+        {
+            "pyproject.toml": 'name = "my_pkg"\nversion = "0.1.1"\nauthor = "alice@email.com"\n',
+            "uv.lock": 'name = "dep"\nversion = "0.1.1"\n',
+            "LICENSE": "Copyright alice@email.com\n",
+            "my_pkg/0.1.1/my_pkg.txt": "0.1.1 my_pkg\n",
+        },
+    )
+    dir_output = tmp_path / "out"
+    Maker(
+        dir_input=dir_input,
+        dir_output=dir_output,
+        parameters=[
+            Parameter(selector=["my_pkg"], name="package_name", default="my_pkg"),
+            # only applied to pyproject.toml
+            Parameter(selector=["0.1.1"], name="version", default="0.1.1", include=["pyproject.toml"]),
+            # applied to everything but LICENSE
+            Parameter(selector=["alice@email.com"], name="email", default="e", exclude=["LICENSE"]),
+            Parameter(selector=["alice"], name="author", default="alice"),
+        ],
+        verbose=False,
+    ).make_template()
+
+    dir_template = dir_output / "{{ cookiecutter.package_name }}"
+
+    def read(relpath: str) -> str:
+        return dir_template.joinpath(relpath).read_text()
+
+    assert read("pyproject.toml") == (
+        'name = "{{ cookiecutter.package_name }}"\n'
+        'version = "{{ cookiecutter.version }}"\n'
+        'author = "{{ cookiecutter.email }}"\n'
+    )
+    assert read("uv.lock") == 'name = "dep"\nversion = "0.1.1"\n'
+    # the shorter selector matches inside the excluded longer one
+    assert read("LICENSE") == "Copyright {{ cookiecutter.author }}@email.com\n"
+    # names always use all parameters, content follows include / exclude
+    assert read(
+        "{{ cookiecutter.package_name }}/{{ cookiecutter.version }}/{{ cookiecutter.package_name }}.txt"
+    ) == "0.1.1 {{ cookiecutter.package_name }}\n"
+
+
 def test_output_inside_input(tmp_path: Path):
     dir_input = tmp_path / "my_pkg"
     write_files(dir_input, {"my_pkg/__init__.py": ""})

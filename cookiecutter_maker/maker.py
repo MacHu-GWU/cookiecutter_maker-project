@@ -159,7 +159,9 @@ class Maker:
         if self.path_matcher.is_match(relpath) is False:
             return None
 
-        # Apply parameter substitutions to the file path
+        # Apply parameter substitutions to the file path. Parameter level
+        # include / exclude only limit the content, names always use all
+        # parameters so the file stays in its renamed parent directory
         new_relpath = replace_with_parameter(
             text=relpath,
             param_list=self.parameters,
@@ -196,10 +198,13 @@ class Maker:
         # For text files, process the content
         # 1. Escape any existing Jinja2/cookiecutter syntax
         text_content = replace_double_curly_brackets(text_content)
-        # 2. Apply parameter substitutions
+        # 2. Apply parameter substitutions, only the parameters whose
+        # include / exclude rules match this file
         text_content = replace_with_parameter(
             text=text_content,
-            param_list=self.parameters,
+            param_list=[
+                param for param in self.parameters if param.is_applied_to(relpath)
+            ],
         )
         # Write the processed content to the output file
         p_after.write_text(text_content, encoding="utf-8")

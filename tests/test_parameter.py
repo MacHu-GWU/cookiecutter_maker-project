@@ -36,6 +36,23 @@ class TestParameter:
         Parameter(selector=["a"], name="a", in_cookiecutter_json=False)
 
 
+    def test_is_applied_to(self):
+        param = Parameter(selector=["a"], name="a", default="a")
+        assert param.is_applied_to("any/file.txt") is True
+
+        param = Parameter(
+            selector=["a"],
+            name="a",
+            default="a",
+            include=["*.py", "*.toml"],
+            exclude=["tests/"],
+        )
+        assert param.is_applied_to("pyproject.toml") is True
+        assert param.is_applied_to("src/a.py") is True
+        assert param.is_applied_to("README.md") is False
+        assert param.is_applied_to("tests/test_a.py") is False
+
+
 
 if __name__ == "__main__":
     from cookiecutter_maker.tests import run_cov_test

@@ -72,10 +72,21 @@ class Parameter:
         If False, the parameter will be used for replacements but not added to cookiecutter.json.
         Defaults to True.
 
-    :param include: Optional list of file path patterns where this parameter should be applied.
-    :param exclude: Optional list of file path patterns where this parameter should not be applied.
+    :param include: Optional list of file path patterns (relative to the input dir)
+        whose content this parameter is applied to. If empty, apply to all files.
+    :param exclude: Optional list of file path patterns whose content this
+        parameter is NOT applied to. Exclude takes precedence over include.
 
-    TODO make parameter level include and exclude really work.
+    .. note::
+
+        ``include`` and ``exclude`` only limit the file **content**. File and
+        directory **names** are always replaced with all parameters, so that a
+        file always ends up in its renamed parent directory.
+
+        When a longer selector is excluded from a file, a shorter selector of
+        another parameter may match inside it. For example, if ``alice@email.com``
+        is excluded from ``LICENSE``, the ``alice`` part may still be replaced by
+        the ``alice`` parameter.
     """
     # fmt: off
     selector: list[str] = dataclasses.field()
@@ -133,6 +144,14 @@ class Parameter:
         Create a PathMatcher to determine where this parameter should be applied.
         """
         return PathMatcher.new(include=self.include, exclude=self.exclude)
+
+    def is_applied_to(self, path: str) -> bool:
+        """
+        Whether this parameter is applied to the content of the given file.
+
+        :param path: file path relative to the input dir, using ``/`` as separator.
+        """
+        return self.path_matcher.is_match(path)
 
     def to_cookiecutter_key_value(self) -> tuple[str, T.Any]:
         """

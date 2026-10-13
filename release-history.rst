@@ -30,6 +30,7 @@ Backlog (TODO)
     - ``cookiecutter-maker version``: print the version.
 - Add the ``cookiecutter_maker.config`` module to load a ``Maker`` from a JSON config file and merge it with overrides. Relative paths in the config file are resolved against the config file's directory.
 - Add ``Maker.from_dict`` and ``Parameter.from_dict``, unknown or missing fields raise a clear ``ValueError``.
+- ``Parameter.include`` / ``Parameter.exclude`` now work (they were accepted but ignored before). They limit which files' **content** a parameter is applied to, e.g. replace the version only in ``pyproject.toml`` but not in ``uv.lock``. File and directory names always use all parameters.
 - Add ``Maker.overwrite``, delete the existing ``dir_output`` before generating the template. For safety, it only deletes an empty directory or a previously generated template (has ``cookiecutter.json``), and never deletes ``dir_input`` or its parents.
 
 **Minor Improvements**

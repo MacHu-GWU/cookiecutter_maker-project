@@ -371,6 +371,25 @@ Once the template is generated, you can create new projects with:
     cookiecutter path/to/generated/template
 
 
+Limit a Parameter to Some Files
+------------------------------------------------------------------------------
+Sometimes the same text means different things in different files, and the surrounding text can't tell them apart. For example, the project version ``0.1.1`` in ``pyproject.toml`` and a dependency that happens to have the same version in ``uv.lock``. Use the parameter level ``include`` / ``exclude`` (same pattern syntax as the ``Maker`` level ones) to limit which files' content the parameter is applied to:
+
+.. code-block:: python
+
+    Parameter(
+        selector=['version = "0.1.1"', "0.1.1"],
+        name="version",
+        default="0.1.1",
+        include=["pyproject.toml", "*/_version.py"],
+    )
+
+Two things to know:
+
+- ``include`` / ``exclude`` only limit the file **content**. File and directory **names** are always replaced with all parameters, so a file always ends up in its renamed parent directory.
+- When a longer selector is excluded from a file, a shorter selector of another parameter may still match inside it. For example, if the ``alice@email.com`` parameter excludes ``LICENSE``, the ``alice`` parameter still replaces the ``alice`` part in ``LICENSE``.
+
+
 Use the Command Line Interface
 ------------------------------------------------------------------------------
 Instead of writing a Python script, you can describe the same settings in a ``cookiecutter-maker.json`` file and use the ``cookiecutter-maker`` command. Install it with ``pip install "cookiecutter-maker[cli]"``, or run it without installing via ``uvx --from "cookiecutter-maker[cli]" cookiecutter-maker``.
