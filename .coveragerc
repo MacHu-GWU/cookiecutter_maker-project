@@ -6,7 +6,6 @@ omit =
     cookiecutter_maker/tests/*
     cookiecutter_maker/vendor/*
     cookiecutter_maker/_version.py
-    cookiecutter_maker/cli.py
     cookiecutter_maker/paths.py
 
 [report]

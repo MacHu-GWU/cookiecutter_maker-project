@@ -90,3 +90,15 @@ To upgrade to latest version:
 .. code-block:: console
 
     $ pip install --upgrade cookiecutter-maker
+
+To use the ``cookiecutter-maker`` command line interface, install the ``cli`` extra:
+
+.. code-block:: console
+
+    $ pip install "cookiecutter-maker[cli]"
+
+Or run it without installing, using `uv <https://docs.astral.sh/uv/>`_:
+
+.. code-block:: console
+
+    $ uvx --from "cookiecutter-maker[cli]" cookiecutter-maker --help

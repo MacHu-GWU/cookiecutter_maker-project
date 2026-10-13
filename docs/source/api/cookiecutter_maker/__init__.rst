@@ -11,6 +11,8 @@ sub packages and modules
     :maxdepth: 1
 
     api <api>
+    cli <cli>
+    config <config>
     exc <exc>
     maker <maker>
     parameter <parameter>

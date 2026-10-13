@@ -371,11 +371,40 @@ Once the template is generated, you can create new projects with:
     cookiecutter path/to/generated/template
 
 
+Use the Command Line Interface
+------------------------------------------------------------------------------
+Instead of writing a Python script, you can describe the same settings in a ``cookiecutter-maker.json`` file and use the ``cookiecutter-maker`` command. Install it with ``pip install "cookiecutter-maker[cli]"``, or run it without installing via ``uvx --from "cookiecutter-maker[cli]" cookiecutter-maker``.
+
+**Step 1. Create a config file**:
+
+.. code-block:: bash
+
+    cookiecutter-maker init
+
+This creates a sample ``cookiecutter-maker.json`` in the current directory. Its keys are the same as the :class:`~cookiecutter_maker.maker.Maker` arguments, and each item in ``parameters`` has the same keys as :class:`~cookiecutter_maker.parameter.Parameter`. Relative paths are resolved against the directory of the config file. See `example1's config <https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/examples/example1/cookiecutter-maker.json>`_ for a complete example.
+
+**Step 2. Generate the template**:
+
+.. code-block:: bash
+
+    # use ./cookiecutter-maker.json
+    cookiecutter-maker make
+
+    # use another config file
+    cookiecutter-maker make --config path/to/cookiecutter-maker.json
+
+    # command line arguments override the config file
+    cookiecutter-maker make --dir_input ./requests --dir_output ./tmp --exclude ".git,.venv" --overwrite
+
+The precedence is: command line arguments > config file > default values. ``parameters`` can only be defined in the config file. List arguments (``--include``, ``--exclude``, ``--no_render``) accept a comma separated string or a JSON list, and replace the value in the config file. ``--overwrite`` deletes the existing output directory before generating the template. Run ``cookiecutter-maker make --help`` for all options.
+
+
 More Examples
 ------------------------------------------------------------------------------
 - Example 1:
     - `seed project <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/my_package-project>`_
     - `Sample cookiecutter_maker script <https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/tests/examples/test_example1.py>`_
+    - `Sample cookiecutter-maker.json <https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/examples/example1/cookiecutter-maker.json>`_
     - `template directory <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/template>`_
     - `cookiecutter.json <https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/examples/example1/template/cookiecutter.json>`_
     - `hooks <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/hooks>`_

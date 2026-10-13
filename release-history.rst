@@ -15,6 +15,19 @@ Backlog (TODO)
 **Miscellaneous**
 
 
+1.2.0 (TODO)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Features and Improvements**
+
+- Add the ``cookiecutter-maker`` command line interface, powered by `Python Fire <https://github.com/google/python-fire>`_. It is an optional dependency, install it with ``pip install "cookiecutter-maker[cli]"`` or run it with ``uvx --from "cookiecutter-maker[cli]" cookiecutter-maker``.
+    - ``cookiecutter-maker init``: create a sample ``cookiecutter-maker.json`` config file.
+    - ``cookiecutter-maker make``: generate the template. Command line arguments (``--dir_input``, ``--dir_output``, ``--dir_hooks``, ``--include``, ``--exclude``, ``--no_render``, ``--verbose``, ``--overwrite``) take precedence over the config file (``--config``, default to ``./cookiecutter-maker.json``).
+    - ``cookiecutter-maker version``: print the version.
+- Add the ``cookiecutter_maker.config`` module to load a ``Maker`` from a JSON config file and merge it with overrides. Relative paths in the config file are resolved against the config file's directory.
+- Add ``Maker.from_dict`` and ``Parameter.from_dict``, unknown or missing fields raise a clear ``ValueError``.
+- Add ``Maker.overwrite``, delete the existing ``dir_output`` before generating the template. It refuses to delete ``dir_input`` or any of its parents.
+
+
 1.1.0 (TODO)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Breaking Changes**

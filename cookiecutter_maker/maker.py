@@ -17,7 +17,7 @@ from pathlib import Path
 from functools import cached_property
 
 from .str_replace import replace_double_curly_brackets
-from .parameter import Parameter, replace_with_parameter
+from .parameter import Parameter, replace_with_parameter, check_dataclass_kwargs
 from .path_matcher import PathMatcher
 
 
@@ -37,6 +37,9 @@ class Maker:
     :param no_render: List of file path patterns to copy without rendering.
     :param dir_hooks: Optional directory containing cookiecutter hooks.
     :param verbose: Whether to print verbose output during processing
+    :param overwrite: If True, delete the existing ``dir_output`` before
+        generating the template. If False, raise an error when ``dir_output``
+        already exists.
     """
 
     dir_input: Path = dataclasses.field()
@@ -47,9 +50,31 @@ class Maker:
     no_render: list[str] = dataclasses.field(default_factory=list)
     dir_hooks: T.Optional[Path] = dataclasses.field(default=None)
     verbose: bool = dataclasses.field(default=True)
+    overwrite: bool = dataclasses.field(default=False)
 
     def __post_init__(self):
         pass
+
+    @classmethod
+    def from_dict(cls, data: dict[str, T.Any]) -> "Maker":
+        """
+        Create a :class:`Maker` from a JSON-compatible dict, for example the
+        content of a ``cookiecutter-maker.json`` file.
+
+        Path fields are converted to :class:`~pathlib.Path` as is, relative
+        paths are NOT resolved here. Each item in ``parameters`` can be either
+        a dict or a :class:`~cookiecutter_maker.parameter.Parameter` object.
+        """
+        check_dataclass_kwargs(cls, data)
+        kwargs = dict(data)
+        for key in ["dir_input", "dir_output", "dir_hooks"]:
+            if kwargs.get(key) is not None:
+                kwargs[key] = Path(kwargs[key])
+        kwargs["parameters"] = [
+            param if isinstance(param, Parameter) else Parameter.from_dict(param)
+            for param in kwargs["parameters"]
+        ]
+        return cls(**kwargs)
 
     @cached_property
     def path_matcher(self) -> PathMatcher:
@@ -220,9 +245,19 @@ class Maker:
 
         # Check if output directory already exists
         if self.dir_output.exists():
-            raise FileExistsError(
-                f"Output directory {self.dir_output!r} already exists!!"
-            )
+            if self.overwrite is False:
+                raise FileExistsError(
+                    f"Output directory {self.dir_output!r} already exists!! "
+                    f"Use overwrite=True to delete it before generating the template."
+                )
+            # Never delete the seed project itself
+            dir_input = self.dir_input.resolve()
+            dir_output = self.dir_output.resolve()
+            if dir_output == dir_input or dir_output in dir_input.parents:
+                raise ValueError(
+                    f"Output directory {self.dir_output!r} is the input directory "
+                    f"or one of its parents, refuse to overwrite it!!"
+                )
 
         # If hooks directory is specified, check if it exists
         if self.dir_hooks is not None:
@@ -296,6 +331,9 @@ class Maker:
         """
         # Perform pre-execution validation
         self.readiness_check()
+        # Remove the existing output directory if overwrite is enabled
+        if self.overwrite and self.dir_output.exists():
+            shutil.rmtree(self.dir_output)
         # Print parameter information if verbose
         self._print_parameters()
         # Print processing start message if verbose

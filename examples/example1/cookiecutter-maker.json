@@ -1,0 +1,95 @@
+{
+    "dir_input": "./my_package-project",
+    "dir_output": "./tmp",
+    "parameters": [
+        {
+            "selector": [
+                "my_package"
+            ],
+            "name": "package_name",
+            "default": "my_package",
+            "prompt": "Your Python package name, in snake case (e.g. my_package)"
+        },
+        {
+            "selector": [
+                "my-package"
+            ],
+            "name": "package_name_slug",
+            "custom_placeholder": "{{ cookiecutter.package_name | slugify }}",
+            "in_cookiecutter_json": false
+        },
+        {
+            "selector": [
+                "version = \"0.1.1\"",
+                "0.1.1"
+            ],
+            "name": "version",
+            "default": "0.1.1",
+            "prompt": "Semantic Version, in {major}.{minor}.{micro} (e.g. 0.1.1)"
+        },
+        {
+            "selector": [
+                "authors = [\n    { name = \"Alice\"",
+                "name = \"Alice\"",
+                "Alice"
+            ],
+            "name": "author",
+            "default": "Alice",
+            "prompt": "Author name for pyproject.toml file"
+        },
+        {
+            "selector": [
+                "email = \"alice@email.com\" }, # author",
+                "email = \"alice@email.com\"",
+                "alice@email.com"
+            ],
+            "name": "author_email",
+            "default": "alice@email.com",
+            "prompt": "Author email for pyproject.toml file"
+        },
+        {
+            "selector": [
+                "maintainers = [\n    { name = \"Alice\"",
+                "name = \"Alice\"",
+                "Alice"
+            ],
+            "name": "maintainer",
+            "default": "Alice",
+            "prompt": "Maintainer name for pyproject.toml file"
+        },
+        {
+            "selector": [
+                "email = \"alice@email.com\" }, # maintainer",
+                "email = \"alice@email.com\"",
+                "alice@email.com"
+            ],
+            "name": "maintainer_email",
+            "default": "alice@email.com",
+            "prompt": "Maintainer email for pyproject.toml file"
+        },
+        {
+            "selector": [
+                "license = \"MIT\"",
+                "MIT"
+            ],
+            "name": "license",
+            "choice": [
+                "MIT",
+                "AGPL-3.0-or-later",
+                "Proprietary"
+            ],
+            "prompt": "Pick an open source license"
+        }
+    ],
+    "include": [],
+    "exclude": [
+        "LICENSE.txt"
+    ],
+    "no_render": [
+        "*.jinja",
+        "*/vendor/**/*.*"
+    ],
+    "dir_hooks": "./template/hooks",
+    "verbose": true,
+    "overwrite": true
+}

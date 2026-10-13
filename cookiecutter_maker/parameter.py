@@ -15,6 +15,33 @@ from .str_replace import validate_selector, to_placeholder, replace_with_placeho
 from .path_matcher import PathMatcher
 
 
+def check_dataclass_kwargs(klass, data: dict[str, T.Any]):
+    """
+    Validate a dict before passing it as ``**kwargs`` to a dataclass.
+
+    Raise a human-friendly ``ValueError`` for unknown keys (usually a typo in
+    the config file) and for missing required fields, instead of the
+    ``TypeError`` raised by the dataclass constructor.
+    """
+    fields = dataclasses.fields(klass)
+    field_names = {f.name for f in fields}
+    unknown = [k for k in data if k not in field_names]
+    if unknown:
+        raise ValueError(
+            f"Unknown {klass.__name__} field(s): {unknown}, "
+            f"valid fields are: {sorted(field_names)}"
+        )
+    required = [
+        f.name
+        for f in fields
+        if f.default is dataclasses.MISSING
+        and f.default_factory is dataclasses.MISSING
+    ]
+    missing = [k for k in required if k not in data]
+    if missing:
+        raise ValueError(f"Missing required {klass.__name__} field(s): {missing}")
+
+
 @dataclasses.dataclass
 class Parameter:
     """
@@ -75,6 +102,15 @@ class Parameter:
 
     def __post_init__(self):  # pragma: no cover
         self._validate()
+
+    @classmethod
+    def from_dict(cls, data: dict[str, T.Any]) -> "Parameter":
+        """
+        Create a :class:`Parameter` from a JSON-compatible dict,
+        for example one item of ``parameters`` in ``cookiecutter-maker.json``.
+        """
+        check_dataclass_kwargs(cls, data)
+        return cls(**data)
 
     @cached_property
     def placeholder(self) -> str:  # pragma: no cover
