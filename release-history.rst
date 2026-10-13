@@ -15,7 +15,7 @@ Backlog (TODO)
 **Miscellaneous**
 
 
-1.1.0 (TODO)
+1.1.0 (2026-10-13)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Breaking Changes**
 
@@ -35,6 +35,7 @@ Backlog (TODO)
 
 **Minor Improvements**
 
+- Upgrade the ``pathspec`` dependency to ``>=1.0.4,<2.0.0`` (was ``<1.0.0``), and use its ``GitIgnoreSpecPattern``, which matches exactly like the previous ``GitWildMatchPattern`` without the deprecation warning.
 - ``Maker`` now raises ``ValueError`` for duplicate parameter names or duplicate ``selector[0]``, which used to silently override each other.
 
 **Bugfixes**

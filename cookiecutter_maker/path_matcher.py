@@ -7,13 +7,19 @@ A utility for file path filtering using Git-style pattern matching with configur
 import dataclasses
 
 import pathspec
+from pathspec.patterns.gitignore.spec import GitIgnoreSpecPattern
 
 
 @dataclasses.dataclass
 class PathMatcher:
     """
     PathMatcher is a utility class that provides file and directory path matching functionality
-    using ``GitWildMatchPattern`` syntax from the `pathspec <https://pypi.org/project/pathspec/>`_ Python library.
+    using ``GitIgnoreSpecPattern`` syntax from the `pathspec <https://pypi.org/project/pathspec/>`_ Python library.
+
+    ``GitIgnoreSpecPattern`` replicates Git's behavior when a single path is
+    matched without walking the tree, e.g. ``folder/*`` matches
+    ``folder/subfolder/test.py``, because Git would ignore ``folder/subfolder``.
+    The ``"gitignore"`` pattern (``GitIgnoreBasicPattern``) doesn't.
 
     This class allows you to:
 
@@ -139,21 +145,21 @@ class PathMatcher:
         """
         if include:
             include_spec = pathspec.PathSpec.from_lines(
-                pathspec.patterns.GitWildMatchPattern, include
+                GitIgnoreSpecPattern, include
             )
         else:
             include_spec = None
 
         if exclude:
             exclude_spec = pathspec.PathSpec.from_lines(
-                pathspec.patterns.GitWildMatchPattern, exclude
+                GitIgnoreSpecPattern, exclude
             )
         else:
             exclude_spec = None
 
         if no_render:
             no_render_spec = pathspec.PathSpec.from_lines(
-                pathspec.patterns.GitWildMatchPattern, no_render
+                GitIgnoreSpecPattern, no_render
             )
         else:
             no_render_spec = None

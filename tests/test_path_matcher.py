@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import warnings
+
 from cookiecutter_maker.path_matcher import PathMatcher
 
 
@@ -40,6 +42,19 @@ class TestPathMatcher:
         assert matcher.is_match("test_file.py") is False
         assert matcher.is_match("temp/file.py") is False
         assert matcher.is_match("folder/temp/file.md") is False
+
+    def test_no_deprecation_warning(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            PathMatcher.new(include=["*.py"], exclude=["build/"], no_render=["*.jinja"])
+
+    def test_match_inside_matched_directory(self):
+        # Git ignores everything inside an ignored directory, so "folder/*"
+        # matches files in its sub folders too. The include, no_render and
+        # parameter level filters rely on this, since they match single files.
+        matcher = PathMatcher.new(include=["src/*"], exclude=[])
+        assert matcher.is_match("src/sub/a.py") is True
+        assert matcher.is_match("src") is False
 
 
 if __name__ == "__main__":
