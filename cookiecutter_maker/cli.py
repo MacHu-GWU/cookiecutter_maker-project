@@ -55,6 +55,7 @@ class Command:
         :param no_render: file path patterns to copy without rendering, same format as include.
         :param verbose: print verbose output, use --verbose / --noverbose.
         :param overwrite: delete the existing dir_output first, use --overwrite / --nooverwrite.
+            Only an empty directory or a previously generated template is deleted.
         """
         maker = load_maker(
             config=config,

@@ -1,449 +1,203 @@
 Quick Start
 ==============================================================================
-`cookiecutter_maker <https://github.com/MacHu-GWU/cookiecutter_maker-project>`_ is a tool that converts existing projects into reusable cookiecutter templates. This is the reverse of the traditional cookiecutter workflow - instead of starting with a template, you start with a concrete project and transform it into a template.
+`cookiecutter <https://cookiecutter.readthedocs.io>`_ creates a new project from a template. ``cookiecutter_maker`` does the reverse: it turns a **working project** (the "seed") into a cookiecutter template, by replacing the concrete values you choose (package name, version, author ...) with cookiecutter variables.
+
+This page walks through the whole round trip in a few minutes, using the command line. You can find all the files used here in `examples/quick_start <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/quick_start>`_.
 
 
-Example: Creating a Template from an Existing Project
+Install
 ------------------------------------------------------------------------------
-Let's say we've found a project with a well-organized folder structure that we want to follow. Suppose we want to build our own open-source project using `python requests <https://github.com/psf/requests>`_ as a starting point.
-
-**Step 1. Clone the repository**:
+The command line interface is an optional extra. Install it with:
 
 .. code-block:: bash
 
-    git clone --branch v2.32.3 --depth 1 https://github.com/psf/requests
+    pip install "cookiecutter-maker[cli]"
 
-**Step 2. Create and run a script to generate the template**:
-
-Create a Python script like the one below to convert the project into a cookiecutter template:
-
-.. literalinclude:: ./new_project_like_python_requests.py
-   :language: python
-   :linenos:
-
-.. dropdown:: Console Logs
-
-    .. code-block::
-
-        ---------- parameters ----------
-        - 'requests' -> '{{ cookiecutter.package_name }}'
-        - '2.32.3' -> '{{ cookiecutter.package_version }}'
-        - 'Kenneth Reitz' -> '{{ cookiecutter.author }}'
-        - 'me@kennethreitz.org' -> '{{ cookiecutter.author_email }}'
-        ---------- make template ----------
-        from: .
-          to: {{ cookiecutter.package_name }}
-        from: .git-blame-ignore-revs
-          to: {{ cookiecutter.package_name }}/.git-blame-ignore-revs
-        from: LICENSE
-          to: {{ cookiecutter.package_name }}/LICENSE
-        from: .pre-commit-config.yaml
-          to: {{ cookiecutter.package_name }}/.pre-commit-config.yaml
-        from: Makefile
-          to: {{ cookiecutter.package_name }}/Makefile
-        from: HISTORY.md
-          to: {{ cookiecutter.package_name }}/HISTORY.md
-        from: ext
-          to: {{ cookiecutter.package_name }}/ext
-        from: ext/requests-logo.png
-          to: {{ cookiecutter.package_name }}/ext/{{ cookiecutter.package_name }}-logo.png
-        from: ext/requests-logo.ai
-          to: {{ cookiecutter.package_name }}/ext/{{ cookiecutter.package_name }}-logo.ai
-        from: ext/psf.png
-          to: {{ cookiecutter.package_name }}/ext/psf.png
-        from: ext/kr-compressed.png
-          to: {{ cookiecutter.package_name }}/ext/kr-compressed.png
-        from: ext/LICENSE
-          to: {{ cookiecutter.package_name }}/ext/LICENSE
-        from: ext/kr.png
-          to: {{ cookiecutter.package_name }}/ext/kr.png
-        from: ext/requests-logo.svg
-          to: {{ cookiecutter.package_name }}/ext/{{ cookiecutter.package_name }}-logo.svg
-        from: ext/flower-of-life.jpg
-          to: {{ cookiecutter.package_name }}/ext/flower-of-life.jpg
-        from: ext/ss.png
-          to: {{ cookiecutter.package_name }}/ext/ss.png
-        from: ext/ss-compressed.png
-          to: {{ cookiecutter.package_name }}/ext/ss-compressed.png
-        from: ext/psf-compressed.png
-          to: {{ cookiecutter.package_name }}/ext/psf-compressed.png
-        from: ext/requests-logo-compressed.png
-          to: {{ cookiecutter.package_name }}/ext/{{ cookiecutter.package_name }}-logo-compressed.png
-        from: pyproject.toml
-          to: {{ cookiecutter.package_name }}/pyproject.toml
-        from: tests
-          to: {{ cookiecutter.package_name }}/tests
-        from: tests/test_utils.py
-          to: {{ cookiecutter.package_name }}/tests/test_utils.py
-        from: tests/conftest.py
-          to: {{ cookiecutter.package_name }}/tests/conftest.py
-        from: tests/test_structures.py
-          to: {{ cookiecutter.package_name }}/tests/test_structures.py
-        from: tests/test_packages.py
-          to: {{ cookiecutter.package_name }}/tests/test_packages.py
-        from: tests/testserver
-          to: {{ cookiecutter.package_name }}/tests/testserver
-        from: tests/testserver/server.py
-          to: {{ cookiecutter.package_name }}/tests/testserver/server.py
-        from: tests/testserver/__init__.py
-          to: {{ cookiecutter.package_name }}/tests/testserver/__init__.py
-        from: tests/test_testserver.py
-          to: {{ cookiecutter.package_name }}/tests/test_testserver.py
-        from: tests/compat.py
-          to: {{ cookiecutter.package_name }}/tests/compat.py
-        from: tests/__init__.py
-          to: {{ cookiecutter.package_name }}/tests/__init__.py
-        from: tests/test_hooks.py
-          to: {{ cookiecutter.package_name }}/tests/test_hooks.py
-        from: tests/certs
-          to: {{ cookiecutter.package_name }}/tests/certs
-        from: tests/certs/valid
-          to: {{ cookiecutter.package_name }}/tests/certs/valid
-        from: tests/certs/valid/ca
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/ca
-        from: tests/certs/valid/ca/ca.cnf
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/ca/ca.cnf
-        from: tests/certs/valid/ca/ca-private.key
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/ca/ca-private.key
-        from: tests/certs/valid/ca/Makefile
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/ca/Makefile
-        from: tests/certs/valid/ca/ca.crt
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/ca/ca.crt
-        from: tests/certs/valid/ca/ca.srl
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/ca/ca.srl
-        from: tests/certs/valid/server
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/server
-        from: tests/certs/valid/server/server.key
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/server/server.key
-        from: tests/certs/valid/server/Makefile
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/server/Makefile
-        from: tests/certs/valid/server/server.pem
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/server/server.pem
-        from: tests/certs/valid/server/server.csr
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/server/server.csr
-        from: tests/certs/valid/server/cert.cnf
-          to: {{ cookiecutter.package_name }}/tests/certs/valid/server/cert.cnf
-        from: tests/certs/mtls
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls
-        from: tests/certs/mtls/Makefile
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/Makefile
-        from: tests/certs/mtls/README.md
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/README.md
-        from: tests/certs/mtls/client
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client
-        from: tests/certs/mtls/client/Makefile
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client/Makefile
-        from: tests/certs/mtls/client/ca
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client/ca
-        from: tests/certs/mtls/client/ca/ca.cnf
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client/ca/ca.cnf
-        from: tests/certs/mtls/client/ca/ca-private.key
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client/ca/ca-private.key
-        from: tests/certs/mtls/client/ca/Makefile
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client/ca/Makefile
-        from: tests/certs/mtls/client/ca/ca.crt
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client/ca/ca.crt
-        from: tests/certs/mtls/client/ca/ca.srl
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client/ca/ca.srl
-        from: tests/certs/mtls/client/client.pem
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client/client.pem
-        from: tests/certs/mtls/client/client.csr
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client/client.csr
-        from: tests/certs/mtls/client/cert.cnf
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client/cert.cnf
-        from: tests/certs/mtls/client/client.key
-          to: {{ cookiecutter.package_name }}/tests/certs/mtls/client/client.key
-        from: tests/certs/README.md
-          to: {{ cookiecutter.package_name }}/tests/certs/README.md
-        from: tests/certs/expired
-          to: {{ cookiecutter.package_name }}/tests/certs/expired
-        from: tests/certs/expired/Makefile
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/Makefile
-        from: tests/certs/expired/ca
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/ca
-        from: tests/certs/expired/ca/ca.cnf
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/ca/ca.cnf
-        from: tests/certs/expired/ca/ca-private.key
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/ca/ca-private.key
-        from: tests/certs/expired/ca/Makefile
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/ca/Makefile
-        from: tests/certs/expired/ca/ca.crt
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/ca/ca.crt
-        from: tests/certs/expired/ca/ca.srl
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/ca/ca.srl
-        from: tests/certs/expired/server
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/server
-        from: tests/certs/expired/server/server.key
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/server/server.key
-        from: tests/certs/expired/server/Makefile
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/server/Makefile
-        from: tests/certs/expired/server/server.pem
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/server/server.pem
-        from: tests/certs/expired/server/server.csr
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/server/server.csr
-        from: tests/certs/expired/server/cert.cnf
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/server/cert.cnf
-        from: tests/certs/expired/README.md
-          to: {{ cookiecutter.package_name }}/tests/certs/expired/README.md
-        from: tests/test_requests.py
-          to: {{ cookiecutter.package_name }}/tests/test_{{ cookiecutter.package_name }}.py
-        from: tests/utils.py
-          to: {{ cookiecutter.package_name }}/tests/utils.py
-        from: tests/test_adapters.py
-          to: {{ cookiecutter.package_name }}/tests/test_adapters.py
-        from: tests/test_help.py
-          to: {{ cookiecutter.package_name }}/tests/test_help.py
-        from: tests/test_lowlevel.py
-          to: {{ cookiecutter.package_name }}/tests/test_lowlevel.py
-        from: MANIFEST.in
-          to: {{ cookiecutter.package_name }}/MANIFEST.in
-        from: .coveragerc
-          to: {{ cookiecutter.package_name }}/.coveragerc
-        from: docs
-          to: {{ cookiecutter.package_name }}/docs
-        from: docs/index.rst
-          to: {{ cookiecutter.package_name }}/docs/index.rst
-        from: docs/_themes
-          to: {{ cookiecutter.package_name }}/docs/_themes
-        from: docs/_themes/LICENSE
-          to: {{ cookiecutter.package_name }}/docs/_themes/LICENSE
-        from: docs/_themes/flask_theme_support.py
-          to: {{ cookiecutter.package_name }}/docs/_themes/flask_theme_support.py
-        from: docs/_themes/.gitignore
-          to: {{ cookiecutter.package_name }}/docs/_themes/.gitignore
-        from: docs/requirements.txt
-          to: {{ cookiecutter.package_name }}/docs/requirements.txt
-        from: docs/_templates
-          to: {{ cookiecutter.package_name }}/docs/_templates
-        from: docs/_templates/sidebarintro.html
-          to: {{ cookiecutter.package_name }}/docs/_templates/sidebarintro.html
-        from: docs/_templates/sidebarlogo.html
-          to: {{ cookiecutter.package_name }}/docs/_templates/sidebarlogo.html
-        from: docs/_templates/hacks.html
-          to: {{ cookiecutter.package_name }}/docs/_templates/hacks.html
-        from: docs/Makefile
-          to: {{ cookiecutter.package_name }}/docs/Makefile
-        from: docs/conf.py
-          to: {{ cookiecutter.package_name }}/docs/conf.py
-        from: docs/_static
-          to: {{ cookiecutter.package_name }}/docs/_static
-        from: docs/_static/custom.css
-          to: {{ cookiecutter.package_name }}/docs/_static/custom.css
-        from: docs/_static/requests-sidebar.png
-          to: {{ cookiecutter.package_name }}/docs/_static/{{ cookiecutter.package_name }}-sidebar.png
-        from: docs/user
-          to: {{ cookiecutter.package_name }}/docs/user
-        from: docs/user/install.rst
-          to: {{ cookiecutter.package_name }}/docs/user/install.rst
-        from: docs/user/authentication.rst
-          to: {{ cookiecutter.package_name }}/docs/user/authentication.rst
-        from: docs/user/quickstart.rst
-          to: {{ cookiecutter.package_name }}/docs/user/quickstart.rst
-        from: docs/user/advanced.rst
-          to: {{ cookiecutter.package_name }}/docs/user/advanced.rst
-        from: docs/.nojekyll
-          to: {{ cookiecutter.package_name }}/docs/.nojekyll
-        from: docs/make.bat
-          to: {{ cookiecutter.package_name }}/docs/make.bat
-        from: docs/dev
-          to: {{ cookiecutter.package_name }}/docs/dev
-        from: docs/dev/contributing.rst
-          to: {{ cookiecutter.package_name }}/docs/dev/contributing.rst
-        from: docs/dev/authors.rst
-          to: {{ cookiecutter.package_name }}/docs/dev/authors.rst
-        from: docs/community
-          to: {{ cookiecutter.package_name }}/docs/community
-        from: docs/community/support.rst
-          to: {{ cookiecutter.package_name }}/docs/community/support.rst
-        from: docs/community/release-process.rst
-          to: {{ cookiecutter.package_name }}/docs/community/release-process.rst
-        from: docs/community/out-there.rst
-          to: {{ cookiecutter.package_name }}/docs/community/out-there.rst
-        from: docs/community/vulnerabilities.rst
-          to: {{ cookiecutter.package_name }}/docs/community/vulnerabilities.rst
-        from: docs/community/recommended.rst
-          to: {{ cookiecutter.package_name }}/docs/community/recommended.rst
-        from: docs/community/faq.rst
-          to: {{ cookiecutter.package_name }}/docs/community/faq.rst
-        from: docs/community/updates.rst
-          to: {{ cookiecutter.package_name }}/docs/community/updates.rst
-        from: docs/api.rst
-          to: {{ cookiecutter.package_name }}/docs/api.rst
-        from: NOTICE
-          to: {{ cookiecutter.package_name }}/NOTICE
-        from: README.md
-          to: {{ cookiecutter.package_name }}/README.md
-        from: setup.py
-          to: {{ cookiecutter.package_name }}/setup.py
-        from: requirements-dev.txt
-          to: {{ cookiecutter.package_name }}/requirements-dev.txt
-        from: .gitignore
-          to: {{ cookiecutter.package_name }}/.gitignore
-        from: .github
-          to: {{ cookiecutter.package_name }}/.github
-        from: .github/FUNDING.yml
-          to: {{ cookiecutter.package_name }}/.github/FUNDING.yml
-        from: .github/CODE_OF_CONDUCT.md
-          to: {{ cookiecutter.package_name }}/.github/CODE_OF_CONDUCT.md
-        from: .github/workflows
-          to: {{ cookiecutter.package_name }}/.github/workflows
-        from: .github/workflows/codeql-analysis.yml
-          to: {{ cookiecutter.package_name }}/.github/workflows/codeql-analysis.yml
-        from: .github/workflows/lint.yml
-          to: {{ cookiecutter.package_name }}/.github/workflows/lint.yml
-        from: .github/workflows/run-tests.yml
-          to: {{ cookiecutter.package_name }}/.github/workflows/run-tests.yml
-        from: .github/workflows/lock-issues.yml
-          to: {{ cookiecutter.package_name }}/.github/workflows/lock-issues.yml
-        from: .github/workflows/close-issues.yml
-          to: {{ cookiecutter.package_name }}/.github/workflows/close-issues.yml
-        from: .github/ISSUE_TEMPLATE.md
-          to: {{ cookiecutter.package_name }}/.github/ISSUE_TEMPLATE.md
-        from: .github/CONTRIBUTING.md
-          to: {{ cookiecutter.package_name }}/.github/CONTRIBUTING.md
-        from: .github/ISSUE_TEMPLATE
-          to: {{ cookiecutter.package_name }}/.github/ISSUE_TEMPLATE
-        from: .github/ISSUE_TEMPLATE/Feature_request.md
-          to: {{ cookiecutter.package_name }}/.github/ISSUE_TEMPLATE/Feature_request.md
-        from: .github/ISSUE_TEMPLATE/Bug_report.md
-          to: {{ cookiecutter.package_name }}/.github/ISSUE_TEMPLATE/Bug_report.md
-        from: .github/ISSUE_TEMPLATE/Custom.md
-          to: {{ cookiecutter.package_name }}/.github/ISSUE_TEMPLATE/Custom.md
-        from: .github/dependabot.yml
-          to: {{ cookiecutter.package_name }}/.github/dependabot.yml
-        from: .github/SECURITY.md
-          to: {{ cookiecutter.package_name }}/.github/SECURITY.md
-        from: tox.ini
-          to: {{ cookiecutter.package_name }}/tox.ini
-        from: AUTHORS.rst
-          to: {{ cookiecutter.package_name }}/AUTHORS.rst
-        from: setup.cfg
-          to: {{ cookiecutter.package_name }}/setup.cfg
-        from: .readthedocs.yaml
-          to: {{ cookiecutter.package_name }}/.readthedocs.yaml
-        from: src
-          to: {{ cookiecutter.package_name }}/src
-        from: src/requests
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}
-        from: src/requests/cookies.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/cookies.py
-        from: src/requests/auth.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/auth.py
-        from: src/requests/sessions.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/sessions.py
-        from: src/requests/hooks.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/hooks.py
-        from: src/requests/compat.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/compat.py
-        from: src/requests/models.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/models.py
-        from: src/requests/certs.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/certs.py
-        from: src/requests/__init__.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/__init__.py
-        from: src/requests/status_codes.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/status_codes.py
-        from: src/requests/packages.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/packages.py
-        from: src/requests/__version__.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/__version__.py
-        from: src/requests/api.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/api.py
-        from: src/requests/_internal_utils.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/_internal_utils.py
-        from: src/requests/utils.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/utils.py
-        from: src/requests/exceptions.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/exceptions.py
-        from: src/requests/structures.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/structures.py
-        from: src/requests/help.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/help.py
-        from: src/requests/adapters.py
-          to: {{ cookiecutter.package_name }}/src/{{ cookiecutter.package_name }}/adapters.py
-
-**Step 3. Use the generated template with cookiecutter**:
-
-Once the template is generated, you can create new projects with:
+Or run it without installing, using `uv <https://docs.astral.sh/uv/>`_:
 
 .. code-block:: bash
 
-    cookiecutter path/to/generated/template
+    uvx --from "cookiecutter-maker[cli]" cookiecutter-maker --help
+
+The rest of this page writes ``cookiecutter-maker`` for short.
 
 
-Limit a Parameter to Some Files
+Step 1. Start From a Seed Project
 ------------------------------------------------------------------------------
-Sometimes the same text means different things in different files, and the surrounding text can't tell them apart. For example, the project version ``0.1.1`` in ``pyproject.toml`` and a dependency that happens to have the same version in ``uv.lock``. Use the parameter level ``include`` / ``exclude`` (same pattern syntax as the ``Maker`` level ones) to limit which files' content the parameter is applied to:
+Here is a tiny but real Python project. Everything in it is concrete, nothing is a template yet::
+
+    acme_tools-project/
+    ├── README.md
+    ├── pyproject.toml
+    └── acme_tools/
+        └── __init__.py
+
+.. literalinclude:: ../../../examples/quick_start/acme_tools-project/pyproject.toml
+   :language: toml
+   :caption: acme_tools-project/pyproject.toml
+
+.. literalinclude:: ../../../examples/quick_start/acme_tools-project/README.md
+   :language: markdown
+   :caption: acme_tools-project/README.md
+
+We want a template where the package name, version, author and email can be changed.
+
+
+Step 2. Write a Config File
+------------------------------------------------------------------------------
+Create a ``cookiecutter-maker.json`` next to the seed project. Run ``cookiecutter-maker init`` to get a sample one, then edit it:
+
+.. literalinclude:: ../../../examples/quick_start/cookiecutter-maker.json
+   :language: json
+   :caption: cookiecutter-maker.json
+
+- ``dir_input``: the seed project. ``dir_output``: where to write the template. Relative paths are relative to the config file.
+- ``parameters``: each one says "replace this concrete string (``selector``) with the cookiecutter variable ``name``, whose default value is ``default``". The optional ``prompt`` is what cookiecutter asks the user.
+- ``exclude``: files and folders that should not go into the template.
+
+
+Step 3. Generate the Template
+------------------------------------------------------------------------------
+.. code-block:: bash
+
+    cookiecutter-maker make
+
+``make`` reads ``./cookiecutter-maker.json`` by default, and prints every replacement it makes:
+
+.. code-block:: text
+
+    ---------- parameters ----------
+    - 'acme_tools' -> '{{ cookiecutter.package_name }}'
+    - '0.1.0' -> '{{ cookiecutter.version }}'
+    - 'Alice' -> '{{ cookiecutter.author }}'
+    - 'alice@acme.com' -> '{{ cookiecutter.author_email }}'
+    ---------- make template ----------
+    from: .
+      to: {{ cookiecutter.package_name }}-project
+    from: acme_tools
+      to: {{ cookiecutter.package_name }}-project/{{ cookiecutter.package_name }}
+    from: acme_tools/__init__.py
+      to: {{ cookiecutter.package_name }}-project/{{ cookiecutter.package_name }}/__init__.py
+    from: pyproject.toml
+      to: {{ cookiecutter.package_name }}-project/pyproject.toml
+    from: README.md
+      to: {{ cookiecutter.package_name }}-project/README.md
+    Template is generated at: .../examples/quick_start/template
+
+The result is a standard cookiecutter template. Folder names, file names and file contents are all parameterized::
+
+    template/
+    ├── cookiecutter.json
+    └── {{ cookiecutter.package_name }}-project/
+        ├── README.md
+        ├── pyproject.toml
+        └── {{ cookiecutter.package_name }}/
+            └── __init__.py
+
+.. code-block:: toml
+    :caption: template/{{ cookiecutter.package_name }}-project/pyproject.toml
+
+    [project]
+    name = "{{ cookiecutter.package_name }}"
+    version = "{{ cookiecutter.version }}"
+    description = "Handy tools by Acme."
+    authors = [
+        { name = "{{ cookiecutter.author }}", email = "{{ cookiecutter.author_email }}" },
+    ]
+
+.. code-block:: json
+    :caption: template/cookiecutter.json
+
+    {
+        "package_name": "acme_tools",
+        "version": "0.1.0",
+        "author": "Alice",
+        "author_email": "alice@acme.com",
+        "__prompts__": {
+            "package_name": "Python package name, in snake case"
+        },
+        "_new_lines": "\n"
+    }
+
+Run ``make`` again after you change the seed project or the config. Add ``--overwrite`` to replace the previous template.
+
+
+Step 4. Create a New Project From the Template
+------------------------------------------------------------------------------
+Now use cookiecutter as usual:
+
+.. code-block:: bash
+
+    uvx cookiecutter ./template
+
+Answer the prompts with ``my_tools``, ``1.0.0``, ``Bob`` and ``bob@example.com``, and you get a new project with the same structure:
+
+.. code-block:: markdown
+    :caption: my_tools-project/README.md
+
+    # my_tools
+
+    Handy tools by Acme, version 1.0.0.
+
+    ```python
+    import my_tools
+
+    print(my_tools.__version__)
+    ```
+
+.. code-block:: toml
+    :caption: my_tools-project/pyproject.toml
+
+    [project]
+    name = "my_tools"
+    version = "1.0.0"
+    description = "Handy tools by Acme."
+    authors = [
+        { name = "Bob", email = "bob@example.com" },
+    ]
+
+
+Use the Python API Instead
+------------------------------------------------------------------------------
+The command line is a thin wrapper of the Python API. The same template can be generated with:
 
 .. code-block:: python
 
-    Parameter(
-        selector=['version = "0.1.1"', "0.1.1"],
-        name="version",
-        default="0.1.1",
-        include=["pyproject.toml", "*/_version.py"],
+    from pathlib import Path
+    from cookiecutter_maker.api import Maker
+    from cookiecutter_maker.api import Parameter
+
+    maker = Maker(
+        dir_input=Path("acme_tools-project"),
+        dir_output=Path("template"),
+        parameters=[
+            Parameter(
+                selector=["acme_tools"],
+                name="package_name",
+                default="acme_tools",
+                prompt="Python package name, in snake case",
+            ),
+            Parameter(selector=["0.1.0"], name="version", default="0.1.0"),
+            Parameter(selector=["Alice"], name="author", default="Alice"),
+            Parameter(selector=["alice@acme.com"], name="author_email", default="alice@acme.com"),
+        ],
+        exclude=[".git", ".venv", "__pycache__", "*.pyc"],
     )
+    maker.make_template()
 
-Two things to know:
+Or load the config file and override some fields, exactly like the command line does:
 
-- ``include`` / ``exclude`` only limit the file **content**. File and directory **names** are always replaced with all parameters, so a file always ends up in its renamed parent directory.
-- When a longer selector is excluded from a file, a shorter selector of another parameter may still match inside it. For example, if the ``alice@email.com`` parameter excludes ``LICENSE``, the ``alice`` parameter still replaces the ``alice`` part in ``LICENSE``.
+.. code-block:: python
+
+    from cookiecutter_maker.config import load_maker
+
+    maker = load_maker(config="cookiecutter-maker.json", overwrite=True)
+    maker.make_template()
 
 
-Use the Command Line Interface
+Next Steps
 ------------------------------------------------------------------------------
-Instead of writing a Python script, you can describe the same settings in a ``cookiecutter-maker.json`` file and use the ``cookiecutter-maker`` command. Install it with ``pip install "cookiecutter-maker[cli]"``, or run it without installing via ``uvx --from "cookiecutter-maker[cli]" cookiecutter-maker``.
-
-**Step 1. Create a config file**:
-
-.. code-block:: bash
-
-    cookiecutter-maker init
-
-This creates a sample ``cookiecutter-maker.json`` in the current directory. Its keys are the same as the :class:`~cookiecutter_maker.maker.Maker` arguments, and each item in ``parameters`` has the same keys as :class:`~cookiecutter_maker.parameter.Parameter`. Relative paths are resolved against the directory of the config file. See `example1's config <https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/examples/example1/cookiecutter-maker.json>`_ for a complete example.
-
-**Step 2. Generate the template**:
-
-.. code-block:: bash
-
-    # use ./cookiecutter-maker.json
-    cookiecutter-maker make
-
-    # use another config file
-    cookiecutter-maker make --config path/to/cookiecutter-maker.json
-
-    # command line arguments override the config file
-    cookiecutter-maker make --dir_input ./requests --dir_output ./tmp --exclude ".git,.venv" --overwrite
-
-The precedence is: command line arguments > config file > default values. ``parameters`` can only be defined in the config file. List arguments (``--include``, ``--exclude``, ``--no_render``) accept a comma separated string or a JSON list, and replace the value in the config file. ``--overwrite`` deletes the existing output directory before generating the template. Run ``cookiecutter-maker make --help`` for all options.
-
-
-More Examples
-------------------------------------------------------------------------------
-- Example 1:
-    - `seed project <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/my_package-project>`_
-    - `Sample cookiecutter_maker script <https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/tests/examples/test_example1.py>`_
-    - `Sample cookiecutter-maker.json <https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/examples/example1/cookiecutter-maker.json>`_
-    - `template directory <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/template>`_
-    - `cookiecutter.json <https://github.com/MacHu-GWU/cookiecutter_maker-project/blob/main/examples/example1/template/cookiecutter.json>`_
-    - `hooks <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/examples/example1/hooks>`_
-
-
-Enterprise Applications
-------------------------------------------------------------------------------
-In enterprise environments, this tool is particularly valuable for:
-
-- Internal frameworks and libraries with consistent structure
-- Microservice templates that follow company standards
-- Domain-specific applications with similar patterns
-- Closed-source or private repositories that need standardization
-- Projects in any programming language (not limited to Python)
-
-You can develop a well-designed "seed" project according to your organization's best practices, then:
-
-- Use `cookiecutter_maker <https://github.com/MacHu-GWU/cookiecutter_maker-project>`_ to generate a template from your seed project
-- Share the template within your organization
-- Use `cookiecutter <https://github.com/cookiecutter/cookiecutter>`_ to consistently generate new projects based on this template
-- Maintain standards and reduce setup time for new initiatives
-
-Each generated project will have the same structure and patterns, but with customized parameters (names, versions, etc.) based on your specifications.
+- :ref:`core-concepts`: how a parameter decides what to replace, and how to replace a value only in a specific context.
+- :ref:`filtering-files`: control which files go into the template, and which files are copied as is.
+- :ref:`reference`: every config field and command line option.
+- :ref:`examples`: a full featured example with choices, prompts, derived variables and hooks.

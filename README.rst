@@ -56,48 +56,61 @@ Welcome to ``cookiecutter_maker`` Documentation
 
 What is Cookiecutter Maker?
 ------------------------------------------------------------------------------
-``cookiecutter_maker`` is a Python library that does the reverse of traditional `cookiecutter <https://cookiecutter.readthedocs.io>`_ templating. Instead of creating a template from scratch, it helps you convert an existing project into a cookiecutter template automatically.
+`cookiecutter <https://cookiecutter.readthedocs.io>`_ creates new projects from a template. ``cookiecutter_maker`` does the reverse: it turns a **working project** into a cookiecutter template.
+
+Writing a template by hand means editing a project full of ``{{ cookiecutter.xxx }}`` that you can't run or test. With ``cookiecutter_maker``, you keep developing a normal project (the "seed"), and generate the template from it whenever it changes. You tell it which concrete values to parameterize, it takes care of the rest:
+
+- Replaces the values in file contents, file names and folder names.
+- Replaces a value only in the context you want, e.g. the project version but not a dependency that happens to have the same version.
+- Keeps existing Jinja2 syntax (GitHub Actions ``${{ }}``, HTML templates ...) working in the generated projects.
+- Filters files with ``.gitignore`` style patterns, and copies binary or "do not touch" files as is.
+- Writes ``cookiecutter.json``, with defaults, choices and prompts.
 
 
-Key Concept
+30 Seconds Example
 ------------------------------------------------------------------------------
-In software development, teams often start with a working project and want to standardize it as a template for future use. Cookiecutter Maker simplifies this process by:
+Next to your project ``acme_tools-project/``, create a ``cookiecutter-maker.json``:
 
-- Automatically converting concrete projects into cookiecutter templates
-- Replacing hardcoded values with parameterized placeholders
-- Generating a ``cookiecutter.json`` configuration file
-- Handling complex project structures with customizable ``include/exclude`` rules
+.. code-block:: json
 
+    {
+        "dir_input": "./acme_tools-project",
+        "dir_output": "./template",
+        "parameters": [
+            {"selector": ["acme_tools"], "name": "package_name", "default": "acme_tools"},
+            {"selector": ["0.1.0"], "name": "version", "default": "0.1.0"},
+            {"selector": ["Alice"], "name": "author", "default": "Alice"}
+        ],
+        "exclude": [".git", ".venv", "__pycache__"]
+    }
 
-Documentation
-------------------------------------------------------------------------------
-For detailed usage, configuration options, and advanced examples, please visit our `Documentation <https://cookiecutter-maker.readthedocs.io/en/latest/>`_ Site.
+Generate the template, then use it like any cookiecutter template:
+
+.. code-block:: console
+
+    $ uvx --from "cookiecutter-maker[cli]" cookiecutter-maker make
+    $ uvx cookiecutter ./template
+
+Prefer Python? The same thing is available as ``cookiecutter_maker.api.Maker``. See the `Quick Start <https://cookiecutter-maker.readthedocs.io/en/latest/01-Quick-Start/index.html>`_ for the full walkthrough.
 
 
 .. _install:
 
 Install
 ------------------------------------------------------------------------------
-
-``cookiecutter_maker`` is released on PyPI, so all you need is:
-
-.. code-block:: console
-
-    $ pip install cookiecutter-maker
-
-To upgrade to latest version:
-
-.. code-block:: console
-
-    $ pip install --upgrade cookiecutter-maker
-
-To use the ``cookiecutter-maker`` command line interface, install the ``cli`` extra:
+``cookiecutter_maker`` is released on PyPI. Install the library and the command line interface:
 
 .. code-block:: console
 
     $ pip install "cookiecutter-maker[cli]"
 
-Or run it without installing, using `uv <https://docs.astral.sh/uv/>`_:
+Or only the library, for the Python API:
+
+.. code-block:: console
+
+    $ pip install cookiecutter-maker
+
+Or run the command line without installing, using `uv <https://docs.astral.sh/uv/>`_:
 
 .. code-block:: console
 

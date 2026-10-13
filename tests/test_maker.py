@@ -84,6 +84,16 @@ def test_include(tmp_path: Path):
     assert dir_template.joinpath("docs").exists() is False
 
 
+def test_exclude_directory(tmp_path: Path):
+    dir_input = tmp_path / "my_pkg"
+    write_files(dir_input, {"build/sub/a.txt": "", "dist/b.txt": "", "src/c.txt": ""})
+    dir_output = tmp_path / "out"
+    new_maker(dir_input, dir_output, exclude=["build/", "dist"]).make_template()
+    # excluded directories are not created, with or without a trailing slash
+    dir_template = dir_output / "{{ cookiecutter.package_name }}"
+    assert sorted(p.name for p in dir_template.iterdir()) == ["src"]
+
+
 def test_escape_jinja_syntax(tmp_path: Path):
     """
     Jinja2 syntax in the seed project is preserved in the generated project.

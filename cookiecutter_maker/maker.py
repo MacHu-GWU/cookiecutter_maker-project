@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-This module provides the core functionality for converting an existing project
-into a cookiecutter template. It handles file replacement, directory structure
-transformation, and generation of cookiecutter.json configuration.
-
-The main class is :class:`Maker`, which orchestrates the entire template conversion process.
+Convert a seed project into a cookiecutter template, see :class:`Maker`.
 """
 
 import typing as T
@@ -27,30 +23,49 @@ from .path_matcher import PathMatcher
 @dataclasses.dataclass
 class Maker:
     """
-    Cookiecutter maker class for converting concrete projects into cookiecutter templates.
+    Convert a seed project into a cookiecutter template.
 
-    :param dir_input: The directory you want to use as a seed project.
-    :param dir_output: Where to place the generated template project.
-    :param parameter: a list of :class:`~.cookiecutter_maker.parameter.Parameter`
-        defining substitution rules.
-    :param include: List of file path patterns to include from the input dir.
-        If empty, we include all files and directories. If not empty, only
-        the matched files are included, and only the directories containing
-        included files are created.
-    :param exclude: List of file path patterns to exclude from the input dir.
-        If empty, we exclude nothing.
-    :param no_render: List of file path patterns to copy without rendering.
-        The matched files are listed one by one in ``_copy_without_render``
-        of ``cookiecutter.json``, because cookiecutter matches this setting
-        with ``fnmatch`` against the template path, not with the git-style
-        patterns against the seed project path.
-    :param dir_hooks: Optional directory containing cookiecutter hooks.
-    :param verbose: Whether to print verbose output during processing
+    Example::
+
+        maker = Maker(
+            dir_input=Path("acme_tools-project"),
+            dir_output=Path("template"),
+            parameters=[
+                Parameter(selector=["acme_tools"], name="package_name", default="acme_tools"),
+            ],
+            exclude=[".git", ".venv"],
+        )
+        maker.make_template()
+
+    All file path patterns use the ``.gitignore`` syntax, matched against the
+    path relative to ``dir_input`` with ``/`` as the separator.
+
+    :param dir_input: The seed project directory. Its name, with parameters
+        replaced, becomes the project directory in the template.
+    :param dir_output: Where to write the template. ``cookiecutter.json`` is
+        written at its root.
+    :param parameters: List of :class:`~cookiecutter_maker.parameter.Parameter`,
+        the values to replace with cookiecutter variables.
+    :param include: If not empty, only the matched **files** are kept, and only
+        the directories containing kept files are created. Directories are not
+        filtered by ``include``. If empty, all files are kept.
+    :param exclude: The matched files and directories are left out. An excluded
+        directory is not walked. ``exclude`` takes precedence over ``include``.
+    :param no_render: The matched files are copied byte for byte. They are
+        listed one by one in ``_copy_without_render`` of ``cookiecutter.json``,
+        because cookiecutter matches that setting with ``fnmatch`` against the
+        template path, not with our patterns against the seed project path.
+    :param dir_hooks: Optional cookiecutter hooks directory, copied to
+        ``<dir_output>/hooks``.
+    :param verbose: Whether to print every parameter and every file processed.
     :param overwrite: If True, delete the existing ``dir_output`` before
         generating the template. For safety, it only deletes an empty directory
         or a previously generated template (has ``cookiecutter.json``), and never
         deletes ``dir_input`` or its parents. If False, raise an error when
         ``dir_output`` already exists.
+
+    :raises ValueError: if two parameters have the same ``selector[0]``, or the
+        same ``name`` in ``cookiecutter.json``.
     """
 
     dir_input: Path = dataclasses.field()
@@ -109,8 +124,8 @@ class Maker:
     @cached_property
     def path_matcher(self) -> PathMatcher:
         """
-        Create and return a :class:`~.cookiecutter_maker.path_matcher.PathMatcher`
-        instance for filtering files and directories.
+        The :class:`~cookiecutter_maker.path_matcher.PathMatcher` built from
+        ``include``, ``exclude`` and ``no_render``.
         """
         return PathMatcher.new(
             include=self.include,
@@ -121,10 +136,8 @@ class Maker:
     @cached_property
     def dir_template(self) -> Path:
         """
-        Determine the output template directory path.
-
-        This creates the path for the project template folder with cookiecutter
-        variables in the name, based on the original input directory name.
+        The project directory in the template, i.e. ``dir_output`` joined with
+        the name of ``dir_input`` with parameters replaced.
         """
         folder_name = replace_with_parameter(
             text=self.dir_input.name,
@@ -135,10 +148,7 @@ class Maker:
     @cached_property
     def path_cookiecutter_json(self) -> Path:
         """
-        Get the path for the ``cookiecutter.json`` configuration file.
-
-        This file will contain the parameter definitions, default values,
-        and other cookiecutter configuration options.
+        The path of ``cookiecutter.json`` in ``dir_output``.
         """
         return self.dir_output.joinpath("cookiecutter.json")
 
@@ -227,7 +237,9 @@ class Maker:
         # Directories are only filtered by exclude rules, include rules are
         # applied to files, otherwise ``include=["*.py"]`` would skip the
         # directories that contain the python files. The root is always processed.
-        if is_root is False and self.path_matcher.is_excluded(relpath):
+        # A trailing "/" tells gitignore-style patterns that this is a
+        # directory, so that a pattern like ``build/`` matches it.
+        if is_root is False and self.path_matcher.is_excluded(relpath + "/"):
             return None
 
         # Apply parameter substitutions to the directory path
@@ -288,7 +300,13 @@ class Maker:
 
     def readiness_check(self):
         """
-        Perform pre-execution checks to ensure the operation can proceed.
+        Check that the template can be generated, before writing anything.
+
+        :raises FileNotFoundError: ``dir_input`` or ``dir_hooks`` doesn't exist.
+        :raises FileExistsError: ``dir_output`` exists and ``overwrite`` is False,
+            or ``dir_output`` is a file.
+        :raises ValueError: ``overwrite`` is True but ``dir_output`` is not safe
+            to delete, see :class:`Maker`.
         """
         # Check if input directory exists
         if self.dir_input.exists() is False:
@@ -347,7 +365,9 @@ class Maker:
 
     def write_cookiecutter_json(self):
         """
-        Create the ``cookiecutter.json`` configuration file.
+        Write ``cookiecutter.json``: the parameters in order, ``__prompts__``,
+        ``_copy_without_render`` (exact template paths of the ``no_render``
+        files) and ``_new_lines``.
 
         See https://cookiecutter.readthedocs.io/en/stable/tutorials/tutorial2.html#step-2-create-cookiecutter-json
         """
@@ -382,11 +402,10 @@ class Maker:
 
     def copy_hooks(self):
         """
-        Copy the hooks directory to the output template if specified.
+        Copy ``dir_hooks`` to ``<dir_output>/hooks``, if it is set.
 
         `Cookiecutter hooks <https://cookiecutter.readthedocs.io/en/stable/advanced/hooks.html>`_
-        are scripts that run before or after template generation.
-        If a hooks directory is specified, it is copied to the output template.
+        are scripts that run before or after a project is generated.
         """
         if self.dir_hooks is None:
             return
@@ -395,7 +414,8 @@ class Maker:
 
     def make_template(self):
         """
-        Execute the full template generation process.
+        Generate the template: check, (optionally) delete the old ``dir_output``,
+        convert ``dir_input``, write ``cookiecutter.json`` and copy the hooks.
         """
         # Perform pre-execution validation
         self.readiness_check()

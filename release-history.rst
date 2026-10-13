@@ -43,12 +43,15 @@ Backlog (TODO)
 - Fix Jinja2 block and comment syntax in the seed project (e.g. ``{% if x %}`` in HTML, ``${#array[@]}`` in shell scripts) breaking the generated template. ``{%`` and ``{#`` are now escaped like ``{{``.
 - Fix parameter replacement randomly corrupting text when a selector is short (it could match inside the internal UUID placeholders), and depending on the order of parameters when selectors overlap. Now all selectors are replaced in a single pass and the longest match wins.
 - Fix infinite recursion when ``dir_output`` is inside ``dir_input``, the output directory is now skipped.
+- Fix ``custom_placeholder`` replacing the whole ``selector[0]`` and dropping its context. It now only replaces the narrowest selector, like the default ``{{ cookiecutter.<name> }}`` placeholder.
 - Fix ``no_render`` files being rendered by cookiecutter anyway: cookiecutter matches ``_copy_without_render`` with ``fnmatch`` against the template path, so most git-style patterns (e.g. ``vendor/``, ``/*.html``, ``*/vendor/**/*.*``) never matched. ``cookiecutter.json`` now lists the exact template path of each ``no_render`` file instead of the patterns.
 - Use ``/`` as the path separator for ``include`` / ``exclude`` / ``no_render`` pattern matching on Windows.
+- Fix ``exclude`` patterns with a trailing slash (e.g. ``build/``) leaving an empty folder in the template.
 - Fix the misspelled ``classifier`` key in ``pyproject.toml``, so the PyPI classifiers (license, supported Python versions) are actually published.
 
 **Miscellaneous**
 
+- Rewrite the documentation: Quick Start with the command line, Core Concepts, Filtering Files, Reference and Examples. The examples in the document are covered by unit tests.
 - Migrate the development workflow from poetry + ``bin/`` scripts to mise + uv + Claude Code, and the build backend from poetry-core to setuptools.
 
 

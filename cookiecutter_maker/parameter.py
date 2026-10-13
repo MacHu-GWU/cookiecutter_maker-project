@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-This module defines the :class:`Parameter` class used for template parameter substitution
-in the cookiecutter_maker package. It provides functionality for defining, validating,
-and applying parameter replacements when converting concrete projects to cookiecutter
-templates.
+:class:`Parameter`, a concrete value in the seed project to replace with a
+cookiecutter variable.
 """
 
 import typing as T
@@ -47,30 +45,32 @@ def check_dataclass_kwargs(klass, data: dict[str, T.Any]):
 @dataclasses.dataclass
 class Parameter:
     """
-    Defines a parameter for cookiecutter template substitution.
+    A concrete value in the seed project to replace with a cookiecutter variable.
 
-    A Parameter represents a value in the concrete project that should be replaced
-    with a cookiecutter variable in the template. Each parameter has a name,
-    a selector list for hierarchical matching, and optional values like default,
-    choices, include/exclude patterns.
+    The ``selector`` is a list of strings, from the broadest context to the
+    value itself. Only ``selector[0]`` is searched, and inside each match, the
+    last selector is replaced with ``{{ cookiecutter.<name> }}``. This replaces
+    a value only in a specific context::
 
-    The selector is a list of strings used for hierarchical matching, where each
-    string is a substring of the previous. This provides precise control over
-    the replacement process, from more general to more specific matches.
+        >>> Parameter(selector=['version = "0.1.1"', "0.1.1"], name="version", default="0.1.1").placeholder
+        'version = "{{ cookiecutter.version }}"'
 
-    :param selector: A list of strings for hierarchical matching, from broadest
-        to most specific. Each string must be a substring of the previous one.
-    :param name: The name of the parameter, used in the cookiecutter placeholder.
-    :param default: The default value for the parameter in the ``cookiecutter.json`` file.
-        Required if choice is empty.
-    :param choice: Optional list of choices for the parameter. If provided, default must be None.
+    :param selector: A list of strings, from the broadest context to the value
+        to replace. Each string must be a substring of the previous one.
+    :param name: The variable name, the placeholder is ``{{ cookiecutter.<name> }}``.
+    :param default: The default value in ``cookiecutter.json``.
+        Exactly one of ``default`` and ``choice`` is required, unless
+        ``in_cookiecutter_json`` is False.
+    :param choice: A list of choices, the first one is the default.
         See https://cookiecutter.readthedocs.io/en/stable/advanced/choice_variables.html
-    :param prompt: Optional human readable prompt.
-    :param custom_placeholder: Optional custom placeholder string for the parameter,
-        this will override the default ``{{ cookiecutter.name }}`` format.
-    :param in_cookiecutter_json: Whether to include this parameter in the cookiecutter.json file.
-        If False, the parameter will be used for replacements but not added to cookiecutter.json.
-        Defaults to True.
+    :param prompt: Optional human readable prompt, written to ``__prompts__``
+        of ``cookiecutter.json``. A string, or a dict for choice labels.
+        See https://cookiecutter.readthedocs.io/en/stable/advanced/human_readable_prompts.html
+    :param custom_placeholder: Use this instead of ``{{ cookiecutter.<name> }}``
+        to replace the last selector, e.g. ``{{ cookiecutter.package_name | slugify }}``.
+    :param in_cookiecutter_json: Whether to add this parameter to
+        ``cookiecutter.json``. Set to False for a value derived from another
+        variable with ``custom_placeholder``.
 
     :param include: Optional list of file path patterns (relative to the input dir)
         whose content this parameter is applied to. If empty, apply to all files.
@@ -102,7 +102,8 @@ class Parameter:
 
     def _validate(self):
         """
-        Validate parameter configuration.
+        :raises ValueError: invalid selector, or not exactly one of ``default``
+            and ``choice`` when ``in_cookiecutter_json`` is True.
         """
         validate_selector(self.selector)
         if self.in_cookiecutter_json:
@@ -126,22 +127,23 @@ class Parameter:
         return cls(**data)
 
     @cached_property
-    def placeholder(self) -> str:  # pragma: no cover
+    def placeholder(self) -> str:
         """
-        Generate the cookiecutter placeholder string for this parameter.
-
-        The placeholder is created using the parameter name and selector,
-        following the cookiecutter template format: ``{{ cookiecutter.param_name }}``
+        What ``selector[0]`` is replaced with: ``selector[0]`` with the
+        narrowest selector replaced by ``{{ cookiecutter.<name> }}``,
+        or by :attr:`custom_placeholder` if it is set.
         """
-        if self.custom_placeholder:
-            return self.custom_placeholder
-        else:
-            return to_placeholder(name=self.name, selector=self.selector)
+        return to_placeholder(
+            name=self.name,
+            selector=self.selector,
+            token=self.custom_placeholder,
+        )
 
     @cached_property
     def path_matcher(self) -> PathMatcher:
         """
-        Create a PathMatcher to determine where this parameter should be applied.
+        The :class:`~cookiecutter_maker.path_matcher.PathMatcher` built from
+        ``include`` and ``exclude``.
         """
         return PathMatcher.new(include=self.include, exclude=self.exclude)
 
@@ -155,7 +157,8 @@ class Parameter:
 
     def to_cookiecutter_key_value(self) -> tuple[str, T.Any]:
         """
-        Generate a key-value pair for the ``cookiecutter.json`` file.
+        The key and value of this parameter in ``cookiecutter.json``:
+        the choice list if set, otherwise the default value.
         """
         if self.choice:
             return (self.name, self.choice)
@@ -168,10 +171,9 @@ def replace_with_parameter(
     param_list: list[Parameter],
 ) -> str:
     """
-    Replace text with parameter placeholders.
-
-    This function takes a text string and a list of parameters, and replaces
-    occurrences of each parameter's selector with its cookiecutter placeholder.
+    Replace ``selector[0]`` of each parameter with its placeholder, in a single
+    pass where the longest match wins. See
+    :func:`~cookiecutter_maker.str_replace.replace_with_placeholders`.
     """
     replacements = [(param.selector[0], param.placeholder) for param in param_list]
     return replace_with_placeholders(text, replacements)

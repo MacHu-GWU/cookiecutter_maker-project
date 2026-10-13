@@ -1,0 +1,28 @@
+{
+    "dir_input": "./acme_tools-project",
+    "dir_output": "./template",
+    "parameters": [
+        {
+            "selector": ["acme_tools"],
+            "name": "package_name",
+            "default": "acme_tools",
+            "prompt": "Python package name, in snake case"
+        },
+        {
+            "selector": ["0.1.0"],
+            "name": "version",
+            "default": "0.1.0"
+        },
+        {
+            "selector": ["Alice"],
+            "name": "author",
+            "default": "Alice"
+        },
+        {
+            "selector": ["alice@acme.com"],
+            "name": "author_email",
+            "default": "alice@acme.com"
+        }
+    ],
+    "exclude": [".git", ".venv", "__pycache__", "*.pyc"]
+}

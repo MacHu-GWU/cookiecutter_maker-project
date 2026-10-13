@@ -1,0 +1,7 @@
+[project]
+name = "acme_tools"
+version = "0.1.0"
+description = "Handy tools by Acme."
+authors = [
+    { name = "Alice", email = "alice@acme.com" },
+]

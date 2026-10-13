@@ -35,6 +35,7 @@ def validate_selector(selector: list[str]):
 def to_placeholder(
     name: str,
     selector: list[str],
+    token: str | None = None,
 ) -> str:
     """
     Convert a selector to a placeholder token that can be used in a template.
@@ -49,9 +50,12 @@ def to_placeholder(
 
     :param name: The name of the parameter.
     :param selector: A list of string patterns to validate. Cannot be empty.
+    :param token: what the narrowest selector is replaced with,
+        default to ``{{ cookiecutter.<name> }}``.
     """
     previous = None
-    token = "{{ cookiecutter." + name + " }}"
+    if token is None:
+        token = "{{ cookiecutter." + name + " }}"
     for pattern in selector[::-1]:
         if previous is None:
             previous = (pattern, token)

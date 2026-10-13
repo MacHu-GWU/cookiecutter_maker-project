@@ -36,6 +36,19 @@ class TestParameter:
         Parameter(selector=["a"], name="a", in_cookiecutter_json=False)
 
 
+    def test_placeholder(self):
+        param = Parameter(selector=['url = "my-package"', "my-package"], name="slug", default="x")
+        assert param.placeholder == 'url = "{{ cookiecutter.slug }}"'
+
+        # custom placeholder keeps the context of the selector hierarchy
+        param = Parameter(
+            selector=['url = "my-package"', "my-package"],
+            name="slug",
+            custom_placeholder="{{ cookiecutter.package_name | slugify }}",
+            in_cookiecutter_json=False,
+        )
+        assert param.placeholder == 'url = "{{ cookiecutter.package_name | slugify }}"'
+
     def test_is_applied_to(self):
         param = Parameter(selector=["a"], name="a", default="a")
         assert param.is_applied_to("any/file.txt") is True
