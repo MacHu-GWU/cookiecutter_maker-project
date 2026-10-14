@@ -179,7 +179,15 @@ def load_maker(
             "'parameters' is not defined, it can only be set in the config file, "
             "create one with 'cookiecutter-maker init' or pass '--config'."
         )
-    return Maker.from_dict(data)
+    maker = Maker.from_dict(data)
+    # Don't let overwrite delete the config file itself
+    if maker.overwrite and path_config is not None:
+        if maker.dir_output.resolve() in path_config.resolve().parents:
+            raise ValueError(
+                f"Config file {str(path_config)!r} is inside the output directory "
+                f"{str(maker.dir_output)!r}, refuse to overwrite it!!"
+            )
+    return maker
 
 
 def write_sample_config(

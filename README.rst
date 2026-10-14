@@ -62,7 +62,8 @@ Writing a template by hand means editing a project full of ``{{ cookiecutter.xxx
 
 - Replaces the values in file contents, file names and folder names.
 - Replaces a value only in the context you want, e.g. the project version but not a dependency that happens to have the same version.
-- Keeps existing Jinja2 syntax (GitHub Actions ``${{ }}``, HTML templates ...) working in the generated projects.
+- Limits a parameter to some files, e.g. replace the version in ``pyproject.toml`` but not in ``CHANGELOG.md``.
+- Keeps existing Jinja2 syntax (GitHub Actions ``${{ }}``, HTML templates, ``{}}`` in JSON ...) working in the generated projects.
 - Filters files with ``.gitignore`` style patterns, and copies binary or "do not touch" files as is.
 - Writes ``cookiecutter.json``, with defaults, choices and prompts.
 

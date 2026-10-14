@@ -113,22 +113,93 @@ def replace_with_placeholders(
 
 # Jinja2 delimiters that need to be escaped in the seed project.
 # Only the opening delimiters matter for Jinja2, ``}}`` is escaped as well
-# to keep the generated template symmetric and readable.
-_jinja_delimiter_pattern = re.compile(r"\{\{|\}\}|\{%|\{#")
+# to keep the generated template symmetric and readable. Leading ``{`` are
+# included, otherwise ``{}}`` would become ``{{% raw %}...`` and the
+# remaining ``{{`` would start a Jinja2 variable.
+_jinja_delimiter_pattern = r"\{*(?:\{\{|\}\}|\{%|\{#)"
+
+
+def _raw(text: str) -> str:
+    return "{% raw %}" + text + "{% endraw %}"
+
+
+def escape_and_replace(
+    text: str,
+    replacements: list[tuple[str, str]],
+) -> str:
+    """
+    Escape existing Jinja2 syntax and replace the search strings, in a single
+    pass, so that:
+
+    - Jinja2 delimiters ``{{``, ``}}``, ``{%`` and ``{#`` in the text are
+      wrapped with ``{% raw %}...{% endraw %}``, and come out of cookiecutter
+      unchanged. For example, ``{% if x %}`` in a HTML file, or
+      ``${#array[@]}`` in a shell script.
+    - The ``{% raw %}`` tags we insert are never touched by a replacement,
+      and a search string never matches across them.
+    - When search strings overlap, the longest one wins, regardless of the order.
+    - A literal ``{`` right before a replacement or ``}`` right after it is
+      escaped too, otherwise ``${my_proj}`` would become ``${{{ ... }}}``.
+
+    Example:
+
+    >>> escape_and_replace("${my_proj} {{ x }}", [("my_proj", "{{ cookiecutter.name }}")])
+    '${% raw %}{{% endraw %}{{ cookiecutter.name }}{% raw %}}{% endraw %} {% raw %}{{{% endraw %} x {% raw %}}}{% endraw %}'
+
+    :param text: The input text.
+    :param replacements: List of tuples (search_string, replace_string).
+        Empty search strings are ignored. If a search string appears more than
+        once, the last one wins.
+    """
+    mapping = {
+        search_string: replace_string
+        for search_string, replace_string in replacements
+        if search_string
+    }
+    # Python regex alternation picks the first alternative that matches,
+    # so the search strings come first, longest first.
+    alternatives = [re.escape(k) for k in sorted(mapping, key=len, reverse=True)]
+    alternatives.append(_jinja_delimiter_pattern)
+    pattern = re.compile("|".join(alternatives))
+
+    # Split the text into pieces of (text, kind),
+    # kind is "literal", "raw" (escaped Jinja2 syntax) or "replaced"
+    pieces = []
+    pos = 0
+    for match in pattern.finditer(text):
+        if match.start() > pos:
+            pieces.append((text[pos : match.start()], "literal"))
+        matched = match.group(0)
+        if matched in mapping:
+            pieces.append((mapping[matched], "replaced"))
+        else:
+            pieces.append((_raw(matched), "raw"))
+        pos = match.end()
+    if pos < len(text):
+        pieces.append((text[pos:], "literal"))
+
+    # Escape the literal braces next to a replacement
+    chunks = []
+    for i, (piece, kind) in enumerate(pieces):
+        if kind == "literal":
+            head = tail = ""
+            if i > 0 and pieces[i - 1][1] == "replaced" and pieces[i - 1][0].endswith("}"):
+                rest = piece.lstrip("}")
+                head, piece = piece[: len(piece) - len(rest)], rest
+            if (
+                i + 1 < len(pieces)
+                and pieces[i + 1][1] == "replaced"
+                and pieces[i + 1][0].startswith("{")
+            ):
+                rest = piece.rstrip("{")
+                piece, tail = rest, piece[len(rest) :]
+            piece = (_raw(head) if head else "") + piece + (_raw(tail) if tail else "")
+        chunks.append(piece)
+    return "".join(chunks)
 
 
 def replace_double_curly_brackets(text: str) -> str:
     """
-    Escape Jinja2 syntax with raw blocks.
-
-    When converting a seed project to a cookiecutter template, Jinja2 syntax
-    in the original files needs special handling. This function wraps the
-    Jinja2 delimiters ``{{``, ``}}``, ``{%`` and ``{#`` with
-    ``{% raw %}...{% endraw %}``, so they are preserved as literal text in the
-    generated project, rather than being interpreted by cookiecutter. For example,
-    ``{% if x %}`` in a seed HTML file, or ``${#array[@]}`` in a seed shell script.
+    Escape Jinja2 syntax with raw blocks, see :func:`escape_and_replace`.
     """
-    return _jinja_delimiter_pattern.sub(
-        lambda match: "{% raw %}" + match.group(0) + "{% endraw %}",
-        text,
-    )
+    return escape_and_replace(text, [])

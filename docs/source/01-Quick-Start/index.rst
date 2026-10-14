@@ -42,6 +42,10 @@ Here is a tiny but real Python project. Everything in it is concrete, nothing is
 
 We want a template where the package name, version, author and email can be changed.
 
+.. note::
+
+    The name of the seed folder becomes the name of the project folder in the template, and cookiecutter requires it to contain a variable. So the folder name must contain one of the values you parameterize, like ``acme_tools`` in ``acme_tools-project``.
+
 
 Step 2. Write a Config File
 ------------------------------------------------------------------------------
@@ -198,6 +202,6 @@ Or load the config file and override some fields, exactly like the command line 
 Next Steps
 ------------------------------------------------------------------------------
 - :ref:`core-concepts`: how a parameter decides what to replace, and how to replace a value only in a specific context.
-- :ref:`filtering-files`: control which files go into the template, and which files are copied as is.
+- :ref:`filtering-files`: control which files go into the template, which files are copied as is, and limit a parameter to some files.
 - :ref:`reference`: every config field and command line option.
 - :ref:`examples`: a full featured example with choices, prompts, derived variables and hooks.

@@ -41,7 +41,7 @@ def test_cli(tmp_path: Path, monkeypatch, capsys):
     assert "does not exist" in capsys.readouterr().err
 
     # make, cli arguments override the config file
-    dir_seed = tmp_path / "seed"
+    dir_seed = tmp_path / "my_project-seed"
     dir_seed.joinpath("my_project").mkdir(parents=True)
     dir_seed.joinpath("my_project", "README.txt").write_text("my_project 0.1.1")
     dir_seed.joinpath(".venv").mkdir()
@@ -51,7 +51,7 @@ def test_cli(tmp_path: Path, monkeypatch, capsys):
             monkeypatch,
             tmp_path,
             "make",
-            "--dir-input=seed",
+            "--dir-input=my_project-seed",
             "--dir_output=out",
             "--exclude=.git,.venv",
             "--noverbose",
@@ -59,10 +59,10 @@ def test_cli(tmp_path: Path, monkeypatch, capsys):
         )
     dir_out = tmp_path / "out"
     assert "Template is generated at" in capsys.readouterr().out
-    assert dir_out.joinpath("seed", "{{ cookiecutter.project_name }}", "README.txt").read_text() == (
+    assert dir_out.joinpath("{{ cookiecutter.project_name }}-seed", "{{ cookiecutter.project_name }}", "README.txt").read_text() == (
         "{{ cookiecutter.project_name }} {{ cookiecutter.version }}"
     )
-    assert dir_out.joinpath("seed", ".venv").exists() is False
+    assert dir_out.joinpath("{{ cookiecutter.project_name }}-seed", ".venv").exists() is False
     assert json.loads(dir_out.joinpath("cookiecutter.json").read_text())["license"] == [
         "MIT",
         "Apache-2.0",

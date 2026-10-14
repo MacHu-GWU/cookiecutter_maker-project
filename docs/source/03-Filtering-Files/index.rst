@@ -18,6 +18,8 @@ A seed project usually contains things that don't belong in a template: ``.git``
 
 ``exclude`` always wins over ``include``.
 
+Each :class:`~cookiecutter_maker.parameter.Parameter` has its own ``include`` and ``exclude`` too. They don't filter files, they limit which files a parameter is applied to, see `Limit a Parameter to Some Files`_.
+
 
 Pattern Syntax
 ------------------------------------------------------------------------------
@@ -91,7 +93,7 @@ Use ``no_render`` for files that must stay exactly as they are, for example:
 - Jinja2 templates (``*.jinja``, ``*.j2``) that are part of your project, not part of the cookiecutter template.
 - Vendored third party code, where a parameter value might appear by coincidence.
 
-These files are copied byte for byte. Their **names** are still parameterized. In ``cookiecutter.json``, ``cookiecutter_maker`` lists the exact template path of each of them in ``_copy_without_render``, so cookiecutter copies them without rendering too:
+These files are copied byte for byte. Their **names** are still parameterized. In ``cookiecutter.json``, ``cookiecutter_maker`` lists the exact template path of each of them in ``_copy_without_render``, so cookiecutter copies them without rendering too. Files that are not valid UTF-8 (images, text in other encodings ...) are copied and listed the same way, without being in ``no_render``:
 
 .. code-block:: json
 

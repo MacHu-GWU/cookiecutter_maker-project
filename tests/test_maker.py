@@ -100,6 +100,8 @@ def test_escape_jinja_syntax(tmp_path: Path):
     """
     files = {
         "page.html": "{% if x %}{{ x }}{% endif %}{# comment #}\n",
+        "data.json": '{"a": {}}\n',
+        "run_my_pkg.sh": 'echo ${my_pkg} "{my_pkg}"\n',
         "run.sh": "arr=(1 2)\necho ${#arr[@]}\n",
         "ci.yml": "run: echo ${{ github.sha }}\n",
     }
@@ -240,6 +242,14 @@ def test_overwrite(tmp_path: Path):
             new_maker(dir_input, dir_bad, overwrite=True).make_template()
     assert dir_input.joinpath("my_pkg", "__init__.py").exists()
 
+    # never delete the hooks inside the output directory
+    dir_template = tmp_path / "template"
+    new_maker(dir_input, dir_template).make_template()
+    write_files(dir_template, {"hooks/post_gen_project.py": "print('hi')"})
+    with pytest.raises(ValueError, match="Hooks directory .* is inside the output"):
+        new_maker(dir_input, dir_template, overwrite=True, dir_hooks=dir_template / "hooks").make_template()
+    assert dir_template.joinpath("hooks", "post_gen_project.py").exists()
+
     # output path is a file
     path_file = tmp_path / "file.txt"
     path_file.write_text("")
@@ -248,10 +258,88 @@ def test_overwrite(tmp_path: Path):
 
 
 def test_readiness_check(tmp_path: Path):
+    dir_input = tmp_path / "my_pkg"
+    dir_input.mkdir()
     with pytest.raises(FileNotFoundError, match="Input directory"):
         new_maker(tmp_path / "missing", tmp_path / "out").make_template()
     with pytest.raises(FileNotFoundError, match="Hooks directory"):
-        new_maker(tmp_path, tmp_path / "out", dir_hooks=tmp_path / "hooks").make_template()
+        new_maker(dir_input, tmp_path / "out", dir_hooks=tmp_path / "hooks").make_template()
+
+    # cookiecutter needs a variable in the project directory name
+    dir_plain = tmp_path / "plain"
+    dir_plain.mkdir()
+    with pytest.raises(ValueError, match="doesn't contain any parameter selector"):
+        new_maker(dir_plain, tmp_path / "out").make_template()
+    assert (tmp_path / "out").exists() is False
+
+
+def test_validate_types():
+    kwargs = dict(dir_input="my_pkg", dir_output="out", parameters=[])
+    # str paths are accepted
+    assert Maker(**kwargs).dir_input == Path("my_pkg")
+    bad_values = [
+        ("dir_hooks", 1, "must be a path"),
+        ("parameters", None, "must be a list of Parameter"),
+        ("parameters", [{"selector": ["a"]}], "must be a list of Parameter"),
+        ("exclude", ".git", "must be a list of strings"),
+        ("include", [1], "must be a list of strings"),
+        ("overwrite", "false", "must be true or false"),
+        ("verbose", "no", "must be true or false"),
+    ]
+    for key, value, message in bad_values:
+        with pytest.raises(ValueError, match=message):
+            Maker(**{**kwargs, key: value})
+
+    # from the config file
+    with pytest.raises(ValueError, match="'parameters' must be a list"):
+        Maker.from_dict({**kwargs, "parameters": None})
+    with pytest.raises(ValueError, match="must be an object"):
+        Maker.from_dict({**kwargs, "parameters": ["my_pkg"]})
+    for param, message in [
+        ({"selector": "my_pkg", "name": "a", "default": "a"}, "'selector' must be a list of strings"),
+        ({"selector": [""], "name": "a", "default": "a"}, "can't be an empty string"),
+        ({"selector": ["a"], "name": "", "default": "a"}, "'name' must be a non-empty string"),
+        ({"selector": ["a"], "name": "a", "choice": "a"}, "'choice' must be a list"),
+        ({"selector": ["a"], "name": "a", "default": "a", "exclude": "x"}, "'exclude' must be a list of strings"),
+        ({"selector": ["a"], "name": "a", "default": "a", "in_cookiecutter_json": "no"}, "must be true or false"),
+    ]:
+        with pytest.raises(ValueError, match=message):
+            Maker.from_dict({**kwargs, "parameters": [param]})
+
+
+def test_dir_input_dot(tmp_path: Path, monkeypatch):
+    dir_input = tmp_path / "my_pkg"
+    write_files(dir_input, {"a.txt": "my_pkg"})
+    monkeypatch.chdir(dir_input)
+    new_maker(Path("."), tmp_path / "out").make_template()
+    assert list_files(tmp_path / "out") == [
+        "cookiecutter.json",
+        "{{ cookiecutter.package_name }}/a.txt",
+    ]
+
+
+def test_non_utf8_text(tmp_path: Path):
+    """
+    A non UTF-8 text file is copied as is, and cookiecutter must not render it.
+    """
+    dir_input = tmp_path / "my_pkg"
+    dir_input.mkdir()
+    dir_input.joinpath("latin1.txt").write_bytes(b"caf\xe9 {{ my_pkg }}\n")
+    dir_output = tmp_path / "template"
+    new_maker(dir_input, dir_output).make_template()
+    dir_generated = tmp_path / "generated"
+    cookiecutter(str(dir_output), no_input=True, output_dir=str(dir_generated))
+    assert dir_generated.joinpath("my_pkg", "latin1.txt").read_bytes() == b"caf\xe9 {{ my_pkg }}\n"
+
+
+def test_line_endings(tmp_path: Path):
+    dir_input = tmp_path / "my_pkg"
+    dir_input.mkdir()
+    dir_input.joinpath("crlf.txt").write_bytes(b"my_pkg\r\nb\r\n")
+    dir_output = tmp_path / "template"
+    new_maker(dir_input, dir_output).make_template()
+    path = dir_output / "{{ cookiecutter.package_name }}" / "crlf.txt"
+    assert path.read_bytes() == b"{{ cookiecutter.package_name }}\nb\n"
 
 
 def test_write_cookiecutter_json(tmp_path: Path):

@@ -24,7 +24,7 @@ Maker Options
       - Description
     * - ``dir_input``
       - required
-      - The seed project folder. Its name, parameterized, becomes the project folder in the template.
+      - The seed project folder. Its name, parameterized, becomes the project folder in the template, so it must contain at least one ``selector[0]``.
     * - ``dir_output``
       - required
       - Where to write the template. Must not exist, unless ``overwrite`` is true.
@@ -94,9 +94,11 @@ Validation
 These raise an error before anything is written:
 
 - Unknown or missing keys.
-- A selector that is not a substring of the previous one.
+- Wrong types, e.g. a string where a list is expected (``"exclude": ".git"``), or ``"false"`` where a boolean is expected. On the command line, use ``--overwrite`` / ``--nooverwrite`` for booleans.
+- A selector that is not a substring of the previous one, or an empty one.
 - Both or neither of ``default`` and ``choice``.
 - Two parameters with the same ``selector[0]``, or the same ``name`` in ``cookiecutter.json``.
+- The name of ``dir_input`` doesn't contain any ``selector[0]``.
 - ``dir_input`` or ``dir_hooks`` doesn't exist, or ``dir_output`` exists without ``overwrite``.
 
 
@@ -105,7 +107,8 @@ Overwrite Safety
 ``overwrite`` deletes ``dir_output`` before generating the template. To protect you from a wrong path such as ``.`` or ``~``, it only deletes ``dir_output`` when:
 
 - it is an empty folder, or a previously generated template (it has a ``cookiecutter.json``), and
-- it is not ``dir_input``, nor a parent of ``dir_input``.
+- it is not ``dir_input``, nor a parent of ``dir_input``, and
+- it doesn't contain ``dir_hooks``, nor the config file.
 
 Otherwise it raises an error and deletes nothing.
 
@@ -135,6 +138,7 @@ Generate the template.
 Other rules:
 
 - Relative paths on the command line are relative to the **current directory**.
+- Boolean options are flags: ``--overwrite`` / ``--nooverwrite``, ``--verbose`` / ``--noverbose``. ``--overwrite=false`` is an error, not "off".
 - ``--include``, ``--exclude`` and ``--no_render`` accept a comma separated string (``".git,.venv"``) or a JSON list (``'[".git", ".venv"]'``). They **replace** the list in the config file, not extend it.
 - Both ``--dir_input`` and ``--dir-input`` styles work.
 - Errors such as a missing file print a one line message and exit with code 1.

@@ -21,10 +21,14 @@ For every folder and file in the seed project:
 2. Replace the parameters in its **name**.
 3. For a file, process its **content**:
 
-   - ``no_render`` files and binary files (not valid UTF-8) are copied byte for byte.
-   - Text files are first escaped (see `Existing Jinja2 Syntax Is Preserved`_), then the parameters are replaced.
+   - ``no_render`` files and files that are not valid UTF-8 are copied byte for byte, and listed in ``_copy_without_render`` so cookiecutter copies them as is too.
+   - In text files, existing Jinja2 syntax is escaped (see `Existing Jinja2 Syntax Is Preserved`_) and the parameters are replaced, in a single pass. A parameter with ``include`` / ``exclude`` is only applied to the matched files (see `Where a Parameter Applies`_).
 
 Finally, ``cookiecutter.json`` is written with the parameters in the order you define them.
+
+.. important::
+
+    Cookiecutter requires the project folder name in the template to contain a variable. So the name of ``dir_input`` must contain at least one ``selector[0]``, e.g. ``acme_tools-project`` with an ``acme_tools`` parameter. Otherwise ``make_template`` raises ``ValueError`` before writing anything.
 
 
 Parameter
@@ -98,7 +102,22 @@ Each selector must be a substring of the previous one, otherwise a ``ValueError`
 
     Every occurrence of the last selector inside ``selector[0]`` is replaced. With ``selector=['v = "1.1"', "1"]``, both ``1`` in ``1.1`` are replaced. Make the last selector specific enough.
 
-To limit a parameter to some files instead of some context, see :ref:`parameter-include-exclude`.
+
+
+Where a Parameter Applies
+------------------------------------------------------------------------------
+By default, a parameter is applied to every file. When the same text means different things in different files, and the surrounding text can't tell them apart, use the parameter's own ``include`` / ``exclude`` patterns to limit which files' **content** it is applied to:
+
+.. code-block:: python
+
+    Parameter(
+        selector=["0.1.0"],
+        name="version",
+        default="0.1.0",
+        include=["pyproject.toml", "*/_version.py"],  # not CHANGELOG.md, uv.lock ...
+    )
+
+Folder and file **names** always use all parameters. See :ref:`parameter-include-exclude` for the details.
 
 
 How Multiple Parameters Are Replaced
@@ -129,13 +148,13 @@ Cookiecutter renders every template file with `Jinja2 <https://jinja.palletsproj
 - ``{% if user %}`` in HTML templates
 - ``${#array[@]}`` in shell scripts
 
-``cookiecutter_maker`` wraps ``{{``, ``}}``, ``{%`` and ``{#`` in text files with ``{% raw %}...{% endraw %}`` before replacing the parameters, so they come out of cookiecutter unchanged. You don't need to do anything. For files that are full of such syntax, such as Jinja2 templates, you can also copy them as is with ``no_render`` (see :ref:`filtering-files`).
+``cookiecutter_maker`` wraps ``{{``, ``}}``, ``{%`` and ``{#`` in text files with ``{% raw %}...{% endraw %}``, so they come out of cookiecutter unchanged. It also handles the tricky cases: ``{}}`` in JSON (``{"a": {}}``), and a value inside braces like ``${acme_tools}`` or ``f"{acme_tools}"``, where the placeholder would otherwise merge with the braces into ``{{{``. You don't need to do anything. For files that are full of such syntax, such as Jinja2 templates, you can also copy them as is with ``no_render`` (see :ref:`filtering-files`).
 
 
 Text and Binary Files
 ------------------------------------------------------------------------------
 - Files that are valid UTF-8 are treated as text. Their line endings are normalized to LF (``\n``), and ``cookiecutter.json`` sets ``"_new_lines": "\n"``, so generated projects always use LF.
-- Other files (images, archives ...) are copied byte for byte, only their names are parameterized.
+- Other files (images, archives, text in other encodings ...) are copied byte for byte, only their names are parameterized. They are listed in ``_copy_without_render``, so cookiecutter doesn't try to render them.
 
 
 Derived Variables

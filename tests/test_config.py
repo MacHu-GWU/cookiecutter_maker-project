@@ -151,6 +151,15 @@ def test_load_maker(tmp_path: Path):
         load_maker(cwd=tmp_path, dir_input="a", dir_output="b")
 
 
+def test_load_maker_config_inside_output(tmp_path: Path):
+    path_config = tmp_path / "template" / CONFIG_FILENAME
+    write_json(path_config, {"dir_input": "../seed", "dir_output": ".", "parameters": PARAMETERS})
+    # fine without overwrite, make_template will refuse the existing dir_output
+    load_maker(config=path_config)
+    with pytest.raises(ValueError, match="is inside the output directory"):
+        load_maker(config=path_config, overwrite=True)
+
+
 def test_write_sample_config(tmp_path: Path):
     path = write_sample_config(cwd=tmp_path)
     assert path == tmp_path / CONFIG_FILENAME

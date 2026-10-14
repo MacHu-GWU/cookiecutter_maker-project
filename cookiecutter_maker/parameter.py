@@ -42,6 +42,14 @@ def check_dataclass_kwargs(klass, data: dict[str, T.Any]):
         raise ValueError(f"Missing required {klass.__name__} field(s): {missing}")
 
 
+def check_list_of_str(key: str, value: T.Any):
+    """
+    Raise a human-friendly ``ValueError`` if ``value`` is not a list of str.
+    """
+    if isinstance(value, list) is False or not all(isinstance(v, str) for v in value):
+        raise ValueError(f"'{key}' must be a list of strings, got {value!r}")
+
+
 @dataclasses.dataclass
 class Parameter:
     """
@@ -105,7 +113,21 @@ class Parameter:
         :raises ValueError: invalid selector, or not exactly one of ``default``
             and ``choice`` when ``in_cookiecutter_json`` is True.
         """
+        check_list_of_str("selector", self.selector)
         validate_selector(self.selector)
+        if self.selector[0] == "":
+            raise ValueError("'selector' can't be an empty string")
+        if isinstance(self.name, str) is False or self.name == "":
+            raise ValueError(f"'name' must be a non-empty string, got {self.name!r}")
+        if isinstance(self.choice, list) is False:
+            raise ValueError(f"'choice' must be a list, got {self.choice!r}")
+        check_list_of_str("include", self.include)
+        check_list_of_str("exclude", self.exclude)
+        if isinstance(self.in_cookiecutter_json, bool) is False:
+            raise ValueError(
+                f"'in_cookiecutter_json' must be true or false, "
+                f"got {self.in_cookiecutter_json!r}"
+            )
         if self.in_cookiecutter_json:
             if self.default is None:
                 if len(self.choice) == 0:
@@ -114,7 +136,7 @@ class Parameter:
                 if len(self.choice):
                     raise ValueError("You can't define both a default value and a list of choices.")
 
-    def __post_init__(self):  # pragma: no cover
+    def __post_init__(self):
         self._validate()
 
     @classmethod
@@ -123,6 +145,8 @@ class Parameter:
         Create a :class:`Parameter` from a JSON-compatible dict,
         for example one item of ``parameters`` in ``cookiecutter-maker.json``.
         """
+        if isinstance(data, dict) is False:
+            raise ValueError(f"Each parameter must be an object, got {data!r}")
         check_dataclass_kwargs(cls, data)
         return cls(**data)
 

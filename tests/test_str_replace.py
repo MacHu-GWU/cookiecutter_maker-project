@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import random
+
+import jinja2
 import pytest
 
 from cookiecutter_maker.str_replace import validate_selector
 from cookiecutter_maker.str_replace import to_placeholder
 from cookiecutter_maker.str_replace import replace_with_placeholders
 from cookiecutter_maker.str_replace import replace_double_curly_brackets
+from cookiecutter_maker.str_replace import escape_and_replace
 
 
 def _test_validate_selector(selector, valid):
@@ -167,7 +171,33 @@ def test_replace_double_curly_brackets():
     # Jinja2 block and comment syntax
     assert replace_double_curly_brackets("{% if x %}") == "{% raw %}{%{% endraw %} if x %}"
     assert replace_double_curly_brackets("${#arr[@]}") == "${% raw %}{#{% endraw %}arr[@]}"
-    assert replace_double_curly_brackets("{{{") == "{% raw %}{{{% endraw %}{"
+    assert replace_double_curly_brackets("{{{") == "{% raw %}{{{{% endraw %}"
+    # a "{" right before "}}" must not form a "{{" with the escape tag
+    assert replace_double_curly_brackets('{"a": {}}') == '{"a": {% raw %}{}}{% endraw %}'
+
+
+
+def test_escape_and_replace_round_trip():
+    """
+    Whatever the text is, rendering the result with Jinja2 gives back the text
+    with only the search string replaced.
+    """
+    env = jinja2.Environment(keep_trailing_newline=True, undefined=jinja2.StrictUndefined)
+    rng = random.Random(0)
+    cases = [
+        '{"a": {}}', "${my_proj}", 'f"{my_proj}"', "{{my_proj}}", "{%{{", "{}{}}",
+        "{# my_proj #}", "{% raw %}my_proj{% endraw %}", "x {{ y }} raw end",
+    ]
+    for selector in ["my_proj", "raw", "end"]:
+        alphabet = ["{", "}", "%", "#", "-", " ", "$", "\n", selector, "a"]
+        texts = cases + [
+            "".join(rng.choice(alphabet) for _ in range(rng.randint(0, 12)))
+            for _ in range(3000)
+        ]
+        for text in texts:
+            template = escape_and_replace(text, [(selector, "{{ cookiecutter.n }}")])
+            rendered = env.from_string(template).render(cookiecutter={"n": "Z"})
+            assert rendered == text.replace(selector, "Z"), (text, template)
 
 
 if __name__ == "__main__":

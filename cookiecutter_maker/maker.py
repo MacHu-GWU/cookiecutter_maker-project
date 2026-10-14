@@ -13,10 +13,11 @@ import dataclasses
 from pathlib import Path
 from functools import cached_property
 
-from .str_replace import replace_double_curly_brackets
+from .str_replace import escape_and_replace
 from .parameter import Parameter
 from .parameter import replace_with_parameter
 from .parameter import check_dataclass_kwargs
+from .parameter import check_list_of_str
 from .path_matcher import PathMatcher
 
 
@@ -41,7 +42,9 @@ class Maker:
     path relative to ``dir_input`` with ``/`` as the separator.
 
     :param dir_input: The seed project directory. Its name, with parameters
-        replaced, becomes the project directory in the template.
+        replaced, becomes the project directory in the template, so it must
+        contain at least one ``selector[0]`` (cookiecutter requires a variable
+        in that name).
     :param dir_output: Where to write the template. ``cookiecutter.json`` is
         written at its root.
     :param parameters: List of :class:`~cookiecutter_maker.parameter.Parameter`,
@@ -61,11 +64,11 @@ class Maker:
     :param overwrite: If True, delete the existing ``dir_output`` before
         generating the template. For safety, it only deletes an empty directory
         or a previously generated template (has ``cookiecutter.json``), and never
-        deletes ``dir_input`` or its parents. If False, raise an error when
-        ``dir_output`` already exists.
+        deletes ``dir_input``, its parents, or a ``dir_hooks`` inside it.
+        If False, raise an error when ``dir_output`` already exists.
 
-    :raises ValueError: if two parameters have the same ``selector[0]``, or the
-        same ``name`` in ``cookiecutter.json``.
+    :raises ValueError: if a field has a wrong type, or two parameters have the
+        same ``selector[0]``, or the same ``name`` in ``cookiecutter.json``.
     """
 
     dir_input: Path = dataclasses.field()
@@ -86,8 +89,32 @@ class Maker:
 
     def _validate(self):
         """
-        Validate that parameters don't conflict with each other.
+        Validate the types of the fields, and that parameters don't conflict
+        with each other, before anything is written.
         """
+        # Accept str paths from the Python API
+        for key in ["dir_input", "dir_output", "dir_hooks"]:
+            value = getattr(self, key)
+            if isinstance(value, str):
+                setattr(self, key, Path(value))
+            elif not (isinstance(value, Path) or (key == "dir_hooks" and value is None)):
+                raise ValueError(f"'{key}' must be a path, got {value!r}")
+        if isinstance(self.parameters, list) is False or not all(
+            isinstance(param, Parameter) for param in self.parameters
+        ):
+            raise ValueError(
+                f"'parameters' must be a list of Parameter, got {self.parameters!r}"
+            )
+        for key in ["include", "exclude", "no_render"]:
+            check_list_of_str(key, getattr(self, key))
+        for key in ["verbose", "overwrite"]:
+            value = getattr(self, key)
+            if isinstance(value, bool) is False:
+                raise ValueError(
+                    f"'{key}' must be true or false, got {value!r}. "
+                    f"On the command line, use --{key} or --no{key}."
+                )
+
         names = [param.name for param in self.parameters if param.in_cookiecutter_json]
         duplicates = sorted({name for name in names if names.count(name) > 1})
         if duplicates:
@@ -112,9 +139,10 @@ class Maker:
         """
         check_dataclass_kwargs(cls, data)
         kwargs = dict(data)
-        for key in ["dir_input", "dir_output", "dir_hooks"]:
-            if kwargs.get(key) is not None:
-                kwargs[key] = Path(kwargs[key])
+        if isinstance(kwargs["parameters"], list) is False:
+            raise ValueError(
+                f"'parameters' must be a list, got {kwargs['parameters']!r}"
+            )
         kwargs["parameters"] = [
             param if isinstance(param, Parameter) else Parameter.from_dict(param)
             for param in kwargs["parameters"]
@@ -139,8 +167,9 @@ class Maker:
         The project directory in the template, i.e. ``dir_output`` joined with
         the name of ``dir_input`` with parameters replaced.
         """
+        # resolve() so that dir_input like "." has a real name
         folder_name = replace_with_parameter(
-            text=self.dir_input.name,
+            text=self.dir_input.resolve().name,
             param_list=self.parameters,
         )
         return self.dir_output.joinpath(folder_name)
@@ -188,10 +217,7 @@ class Maker:
 
         # For files that should be copied without rendering, just copy as-is
         if self.path_matcher.is_render(relpath) is False:
-            p_after.write_bytes(p_before.read_bytes())
-            template_relpath = p_after.relative_to(self.dir_template).as_posix()
-            self._copy_without_render.append(template_relpath)
-            return p_after
+            return self._copy_file_without_render(p_before, p_after)
 
         # Read the file content as bytes
         b = p_before.read_bytes()
@@ -201,23 +227,34 @@ class Maker:
             text_content = b.decode("utf-8")
             text_content = p_before.read_text(encoding="utf-8")
         except UnicodeDecodeError:
-            # For binary files, copy as-is without processing
-            p_after.write_bytes(b)
-            return p_after
+            # For binary files, copy as-is without processing. Cookiecutter
+            # may still detect a non UTF-8 text file (e.g. Latin-1) as text
+            # and fail to render it, so it is listed in _copy_without_render too
+            return self._copy_file_without_render(p_before, p_after)
 
-        # For text files, process the content
-        # 1. Escape any existing Jinja2/cookiecutter syntax
-        text_content = replace_double_curly_brackets(text_content)
-        # 2. Apply parameter substitutions, only the parameters whose
-        # include / exclude rules match this file
-        text_content = replace_with_parameter(
+        # For text files, escape existing Jinja2 syntax and apply the
+        # parameters whose include / exclude rules match this file, in a
+        # single pass so the inserted escape tags are never replaced
+        text_content = escape_and_replace(
             text=text_content,
-            param_list=[
-                param for param in self.parameters if param.is_applied_to(relpath)
+            replacements=[
+                (param.selector[0], param.placeholder)
+                for param in self.parameters
+                if param.is_applied_to(relpath)
             ],
         )
-        # Write the processed content to the output file
-        p_after.write_text(text_content, encoding="utf-8")
+        # Always use LF line endings, on Windows too
+        p_after.write_text(text_content, encoding="utf-8", newline="\n")
+        return p_after
+
+    def _copy_file_without_render(self, p_before: Path, p_after: Path) -> Path:
+        """
+        Copy a file byte for byte, and list it in ``_copy_without_render``
+        so that cookiecutter doesn't render it either.
+        """
+        p_after.write_bytes(p_before.read_bytes())
+        template_relpath = p_after.relative_to(self.dir_template).as_posix()
+        self._copy_without_render.append(template_relpath)
         return p_after
 
     def _make_template_dir(self, p_before: Path) -> Path | None:
@@ -305,13 +342,25 @@ class Maker:
         :raises FileNotFoundError: ``dir_input`` or ``dir_hooks`` doesn't exist.
         :raises FileExistsError: ``dir_output`` exists and ``overwrite`` is False,
             or ``dir_output`` is a file.
-        :raises ValueError: ``overwrite`` is True but ``dir_output`` is not safe
-            to delete, see :class:`Maker`.
+        :raises ValueError: the name of ``dir_input`` contains no selector, or
+            ``overwrite`` is True but ``dir_output`` is not safe to delete,
+            see :class:`Maker`.
         """
         # Check if input directory exists
         if self.dir_input.exists() is False:
             raise FileNotFoundError(
                 f"Input directory {self.dir_input!r} does not exist!!"
+            )
+
+        # Cookiecutter only accepts a template whose project directory name
+        # contains a variable, see cookiecutter.find.find_template
+        name = self.dir_template.name
+        if not ("cookiecutter" in name and "{{" in name and "}}" in name):
+            raise ValueError(
+                f"The name of the input directory {self.dir_input.resolve().name!r} "
+                f"doesn't contain any parameter selector, so cookiecutter can't "
+                f"use the template. Rename it to contain a parameter value, "
+                f"e.g. 'my_package-project' with a 'my_package' parameter."
             )
 
         # Check if output directory already exists
@@ -333,6 +382,14 @@ class Maker:
                     f"Output directory {self.dir_output!r} is the input directory "
                     f"or one of its parents, refuse to overwrite it!!"
                 )
+            # Don't delete the hooks we are going to copy
+            if self.dir_hooks is not None:
+                dir_hooks = self.dir_hooks.resolve()
+                if dir_hooks == dir_output or dir_output in dir_hooks.parents:
+                    raise ValueError(
+                        f"Hooks directory {self.dir_hooks!r} is inside the output "
+                        f"directory {self.dir_output!r}, refuse to overwrite it!!"
+                    )
             # Only delete an empty directory or a previously generated template,
             # in case dir_output is mistakenly set to something like "." or "~"
             is_empty = next(self.dir_output.iterdir(), None) is None

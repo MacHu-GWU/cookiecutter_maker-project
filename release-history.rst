@@ -48,6 +48,14 @@ Backlog (TODO)
 - Fix ``no_render`` files being rendered by cookiecutter anyway: cookiecutter matches ``_copy_without_render`` with ``fnmatch`` against the template path, so most git-style patterns (e.g. ``vendor/``, ``/*.html``, ``*/vendor/**/*.*``) never matched. ``cookiecutter.json`` now lists the exact template path of each ``no_render`` file instead of the patterns.
 - Use ``/`` as the path separator for ``include`` / ``exclude`` / ``no_render`` pattern matching on Windows.
 - Fix ``exclude`` patterns with a trailing slash (e.g. ``build/``) leaving an empty folder in the template.
+- Fix Jinja2 escaping producing an invalid template for ``{}}`` (e.g. ``{"a": {}}`` in JSON).
+- Fix a value inside braces (e.g. ``${my_package}`` in shell, ``f"{my_package}"`` in Python) producing an invalid template, because the placeholder merged with the braces into ``{{{``.
+- Fix a selector like ``raw`` or ``end`` corrupting the inserted ``{% raw %}`` tags. Escaping and replacement now happen in a single pass.
+- Fix files that are not valid UTF-8 text (e.g. Latin-1) making cookiecutter fail. They are now listed in ``_copy_without_render``, like other files copied as is.
+- Fix ``overwrite`` deleting ``dir_hooks`` or the config file when they are inside ``dir_output``. It now refuses.
+- Raise ``ValueError`` before writing anything when the name of ``dir_input`` contains no selector, instead of generating a template that cookiecutter rejects. ``dir_input`` like ``.`` now uses the real folder name.
+- Validate the types of all ``Maker`` and ``Parameter`` fields, so a wrong config (e.g. ``"exclude": ".git"``, ``"parameters": null``, ``--overwrite=false``) gives a clear error instead of a traceback, or worse, ``"false"`` turning ``overwrite`` on.
+- Template text files are always written with LF line endings, on Windows too.
 - Fix the misspelled ``classifier`` key in ``pyproject.toml``, so the PyPI classifiers (license, supported Python versions) are actually published.
 
 **Miscellaneous**
