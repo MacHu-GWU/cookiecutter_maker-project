@@ -116,3 +116,10 @@ Or run the command line without installing, using `uv <https://docs.astral.sh/uv
 .. code-block:: console
 
     $ uvx --from "cookiecutter-maker[cli]" cookiecutter-maker --help
+
+
+Use With AI Coding Agents
+------------------------------------------------------------------------------
+This repo ships an `Agent Skill <https://code.claude.com/docs/en/skills>`_ that teaches AI coding agents such as `Claude Code <https://claude.com/claude-code>`_ how to use ``cookiecutter_maker``: the public API, the command line options and the config file format, without reading the source code.
+
+Copy the `pypi-cookiecutter_maker <https://github.com/MacHu-GWU/cookiecutter_maker-project/tree/main/.claude/skills/pypi-cookiecutter_maker>`_ folder into your project's ``.claude/skills/`` (or ``~/.claude/skills/`` for all projects). The agent then loads it automatically whenever you ask it to turn a project into a cookiecutter template.
