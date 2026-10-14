@@ -58,7 +58,10 @@ def test_maker_from_dict():
 
 def test_resolve_path(tmp_path: Path):
     assert resolve_path("a/../b", tmp_path) == tmp_path / "b"
-    assert resolve_path("/abs", tmp_path) == Path("/abs")
+    # an absolute path is kept as is, build it from tmp_path so that it is
+    # absolute on Windows too ("/abs" has no drive there, so it's relative)
+    path_abs = tmp_path / "abs"
+    assert resolve_path(str(path_abs), tmp_path / "other") == path_abs
     assert resolve_path("~", tmp_path) == Path.home()
 
 
@@ -87,11 +90,13 @@ def test_find_config(tmp_path: Path):
 
 def test_read_config(tmp_path: Path):
     path = tmp_path / "sub" / CONFIG_FILENAME
-    write_json(path, {"dir_input": "./seed", "dir_output": "/abs/out", "dir_hooks": None})
+    dir_output = tmp_path / "abs" / "out"
+    write_json(path, {"dir_input": "./seed", "dir_output": str(dir_output), "dir_hooks": None})
     data = read_config(path)
     # relative to the config file directory, not cwd
     assert data["dir_input"] == str(tmp_path / "sub" / "seed")
-    assert data["dir_output"] == "/abs/out"
+    # absolute paths are kept as is
+    assert data["dir_output"] == str(dir_output)
     assert data["dir_hooks"] is None
 
     path.write_text("[]", encoding="utf-8")
